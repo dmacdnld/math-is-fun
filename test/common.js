@@ -9,6 +9,3 @@ global.socketOptions ={
   'force new connection': true,
   port: 8002
 };
-
-var sinonChai = require("sinon-chai");
-chai.use(sinonChai);
