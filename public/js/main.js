@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var socket = io.connect('http://localhost');
+  var socket = io.connect(window.location.hostname);
   var nodes = {
     question: document.querySelector('#question'),
     result: document.querySelector('#result'),
