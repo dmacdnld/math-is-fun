@@ -2,15 +2,30 @@
   "name": "math-trivia",
   "version": "0.0.1",
   "description": "A fun math trivia game!",
+  "author": "Daniel MacDonald <dnmacdnld@gmail.com>",
+  "contributors": [
+    {
+      "name": "Daniel MacDonald",
+      "email": "dnmacdnld@gmail.com"
+    }
+  ],
   "dependencies": {
-    "socket.io": "0.9.x"
+    "socket.io": "0.9.x",
+    "express": "3.5.x"
   },
-  "author": "Daniel MacDonald",
+  "devDependencies": {
+    "mocha": "1.18.x",
+    "chai": "1.9.x",
+    "socket.io-client": "0.9.x"
+  },
+  "scripts": {
+    "test": "make test"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/dmacdnld/math-trivia.git"
   },
   "engines": {
-    "node": ">=0.10.26"
+    "node": ">=0.10"
   }
 }
