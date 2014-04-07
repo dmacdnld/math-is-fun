@@ -11,12 +11,12 @@ var trivia = function () {
       return answer;
     },
 
-    setAnswer: function (answer) {
-      if (this.getDecimalPlaces(answer) > 2) {
-        answer = parseFloat(answer.toFixed(2));
+    setAnswer: function (newAnswer) {
+      if (this.getDecimalPlaces(newAnswer) > 2) {
+        answer = parseFloat(newAnswer.toFixed(2));
       }
       else {
-        answer = answer;
+        answer = newAnswer;
       }
     },
 
@@ -93,7 +93,7 @@ var trivia = function () {
 
       return trivia;
     }
-  }
+  };
 }();
 
 module.exports = trivia;

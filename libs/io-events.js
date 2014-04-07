@@ -22,7 +22,7 @@ var ioEvents = function (server) {
 
   io.sockets.on('connection', function (socket) {
     var trivia = require('./trivia');
-    socket.emit('trivia', trivia);
+    socket.emit('trivia', trivia.generateTrivia());
   });
 };
 
