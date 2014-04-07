@@ -11,12 +11,16 @@
   ],
   "dependencies": {
     "socket.io": "0.9.x",
-    "express": "3.5.x"
+    "express": "3.5.x",
+    "lodash.find": "2.4.x",
+    "lodash.uniq": "2.4.x"
   },
   "devDependencies": {
     "mocha": "1.18.x",
     "chai": "1.9.x",
-    "socket.io-client": "0.9.x"
+    "socket.io-client": "0.9.x",
+    "sinon": "1.9.x",
+    "sinon-chai": "2.5.x"
   },
   "scripts": {
     "test": "make test"
