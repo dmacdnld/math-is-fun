@@ -3,7 +3,7 @@
 
   var socket = io.connect(window.location.hostname);
   var nodes = {
-    question: document.querySelector('#question'),
+    equation: document.querySelector('#equation'),
     result: document.querySelector('#result'),
     forms: document.querySelectorAll('form'),
     buttonA: document.querySelector("#buttonA"),
@@ -14,11 +14,11 @@
   var formsList = Array.prototype.slice.call(nodes.forms, 0);
 
   socket.on('trivia', function (trivia) {
-    nodes.question.textContent = trivia.question;
-    nodes.buttonA.textContent = trivia.answerChoices.a;
-    nodes.buttonB.textContent = trivia.answerChoices.b;
-    nodes.buttonC.textContent = trivia.answerChoices.c;
-    nodes.buttonD.textContent = trivia.answerChoices.d;
+    nodes.equation.textContent = trivia.equation;
+    nodes.buttonA.textContent = trivia.choices[0];
+    nodes.buttonB.textContent = trivia.choices[1];
+    nodes.buttonC.textContent = trivia.choices[2];
+    nodes.buttonD.textContent = trivia.choices[3];
   });
 
   formsList.forEach(function(form) {
