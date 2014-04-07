@@ -1,19 +1,14 @@
-var app = function () {
-  var express = require('express');
-  var socket = require('socket.io');
+var express = require('express');
+var http = require('http');
 
-  var app = express();
+var app = express();
+var server = http.createServer(app);
 
-  // routing
-  require('./libs/routes').config(app, __dirname);
+// routing
+require('./libs/routes').config(app, __dirname);
 
-  var server = require('./server')(app);
-  var trivia = require('./libs/trivia')(server);
+// socket.io events
+require('./libs/io-events')(server);
 
-  var port = process.env.PORT || 5000;
-  server.listen(port);
-
-  return app;
-}();
-
-module.exports = app;
+var port = process.env.PORT || 5000;
+server.listen(port);
