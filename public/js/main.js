@@ -1,29 +1,34 @@
-(function () {
-  "use strict";
+/** @jsx React.DOM */
 
-  var socket = io.connect(window.location.hostname);
-  var nodes = {
-    equation: document.querySelector('#equation'),
-    result: document.querySelector('#result'),
-    forms: document.querySelectorAll('form'),
-    buttonA: document.querySelector("#buttonA"),
-    buttonB: document.querySelector("#buttonB"),
-    buttonC: document.querySelector("#buttonC"),
-    buttonD: document.querySelector("#buttonD")
-  };
-  var formsList = Array.prototype.slice.call(nodes.forms, 0);
+var React = require('react');
+var JoinForm = require('./components/JoinForm');
+var Round = require('./components/Round');
+var io = require('socket.io-client');
+var socket = io.connect(window.location.hostname);
 
-  socket.on('trivia', function (trivia) {
-    nodes.equation.textContent = trivia.equation;
-    nodes.buttonA.textContent = trivia.choices[0];
-    nodes.buttonB.textContent = trivia.choices[1];
-    nodes.buttonC.textContent = trivia.choices[2];
-    nodes.buttonD.textContent = trivia.choices[3];
-  });
+var Game = React.createClass({
+  getInitialState: function () {
+    var that = this;
 
-  formsList.forEach(function(form) {
-    form.addEventListener('submit', function (event) {
-      event.preventDefault();
+    socket.on('user:joined', function (trivia) {
+      that.setState({
+        equation: trivia.equation,
+        choices: trivia.choices
+      });
     });
-  });
-})();
+
+    return { equation: null, choices: null };
+  },
+  render: function() {
+    return this.state.equation
+      ? <Round equation={this.state.equation} choices={this.state.choices} />
+      : <JoinForm />;
+  }
+});
+
+module.exports = Game;
+
+React.renderComponent(
+  <Game />,
+  document.getElementById('game')
+);

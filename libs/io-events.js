@@ -1,4 +1,8 @@
 var sio = require('socket.io');
+var User = require('./user');
+var Round = require('./round');
+var users = [];
+
 var ioEvents = function (server) {
   var io = sio.listen(server);
 
@@ -21,8 +25,18 @@ var ioEvents = function (server) {
   });
 
   io.sockets.on('connection', function (socket) {
-    var trivia = require('./trivia');
-    socket.emit('trivia', trivia.generateTrivia());
+    socket.on('user:applied', function (username) {
+      var id = socket.id;
+      var nameTaken = users.some(function (user) {
+        return user.name === username;
+      });
+
+      if (nameTaken) {
+        io.sockets.socket(id).emit('user:invalid');
+      } else {
+        io.sockets.socket(id).emit('user:joined', new Round().trivia);
+      }
+    });
   });
 };
 

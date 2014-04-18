@@ -5,31 +5,8 @@
     <title>Math Trivia!</title>
   </head>
   <body>
-    <div id="equation"></div>
+    <div id="game"></div>
 
-    <div id="result"></div>
-
-    <form action="/" method="post">
-      <input type="hidden" name="answerA" value="a">
-      <button id="buttonA" type="submit"></button>
-    </form>
-
-    <form action="/" method="post">
-      <input type="hidden" name="answerB" value="b">
-      <button id="buttonB" type="submit"></button>
-    </form>
-
-    <form action="/" method="post">
-      <input type="hidden" name="answerC" value="c">
-      <button id="buttonC" type="submit"></button>
-    </form>
-
-    <form action="/" method="post">
-      <input type="hidden" name="answerD" value="d">
-      <button id="buttonD" type="submit"></button>
-    </form>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/build/bundle.js"></script>
   </body>
 </html>
