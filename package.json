@@ -34,7 +34,7 @@
     "start-dev": "npm run build-dev && forever --exitcrash -o logs/out.log -e logs/err.log start ~/.nvm/v0.10.26/bin/nodemon app.js",
     "build": "NODE_ENV=production browserify -t reactify -t envify public/js/main.js | uglifyjs -mc > public/js/build/bundle.js",
     "build-dev": "NODE_ENV=development browserify -t reactify -e public/js/main.js -o public/js/build/bundle.js -dv",
-    "test": "./node_modules/.bin/mocha"
+    "test": "npm run build && ./node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",
