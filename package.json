@@ -26,13 +26,12 @@
     "envify": "^1.2.1",
     "watchify": "^0.6.4",
     "browserify": "^3.41.0",
-    "uglifyify": "^2.1.1",
     "uglify-js": "^2.4.13"
   },
   "scripts": {
     "start": "npm run build && node app.js",
     "start-dev": "npm run build-dev && forever --exitcrash -o logs/out.log -e logs/err.log start ~/.nvm/v0.10.26/bin/nodemon app.js",
-    "build": "NODE_ENV=production browserify -t reactify -t envify public/js/main.js | uglifyjs -mc > public/js/build/bundle.js",
+    "build": "NODE_ENV=production browserify -t reactify -t envify public/js/main.js | uglifyjs --screw-ie8 -mc warnings=false > public/js/build/bundle.js",
     "build-dev": "NODE_ENV=development browserify -t reactify -e public/js/main.js -o public/js/build/bundle.js -dv",
     "test": "npm run build && ./node_modules/.bin/mocha"
   },
