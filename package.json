@@ -10,20 +10,31 @@
     }
   ],
   "dependencies": {
-    "socket.io": "0.9.x",
-    "express": "3.5.x",
-    "lodash.find": "2.4.x",
-    "lodash.uniq": "2.4.x"
+    "socket.io": "^0.9.16",
+    "express": "^3.5.1",
+    "react": "^0.10.0"
   },
   "devDependencies": {
-    "mocha": "1.18.x",
-    "chai": "1.9.x",
-    "socket.io-client": "0.9.x",
-    "sinon": "1.9.x",
-    "sinon-chai": "2.5.x"
+    "mocha": "^1.18.2",
+    "chai": "^1.9.1",
+    "socket.io-client": "^0.9.16",
+    "sinon": "^1.9.1",
+    "sinon-chai": "^2.5.0",
+    "lodash.find": "^2.4.1",
+    "lodash.uniq": "^2.4.1",
+    "reactify": "^0.11.0",
+    "envify": "^1.2.1",
+    "watchify": "^0.6.4",
+    "browserify": "^3.41.0",
+    "uglifyify": "^2.1.1",
+    "uglify-js": "^2.4.13"
   },
   "scripts": {
-    "test": "make test"
+    "start": "npm run build && node app.js",
+    "start-dev": "npm run build-dev && forever --exitcrash -o logs/out.log -e logs/err.log start ~/.nvm/v0.10.26/bin/nodemon app.js",
+    "build": "NODE_ENV=production browserify -t reactify -t envify public/js/main.js | uglifyjs -mc > public/js/build/bundle.js",
+    "build-dev": "NODE_ENV=development browserify -t reactify -e public/js/main.js -o public/js/build/bundle.js -dv",
+    "test": "./node_modules/.bin/mocha"
   },
   "repository": {
     "type": "git",

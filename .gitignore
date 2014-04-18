@@ -1,11 +1,16 @@
 # Testing
 node_modules/mocha
-node_modules/.bin/mocha
-node_modules/.bin/_mocha
+node_modules/.bin
 node_modules/chai
 node_modules/sinon
 node_modules/sinon-chai
-node_modules/socket.io-client
+
+# Bundling
+node_modules/browserify
+node_modules/envify
+node_modules/reactify
+node_modules/watchify
+public/js/build/*.js
 
 # Logs
 logs/*.log
