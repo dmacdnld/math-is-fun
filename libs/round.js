@@ -76,17 +76,12 @@ module.exports = function () {
     return choices;
   };
 
-  var generateTrivia = function () {
-    var equation = generateEquation();
-    var choices = generateChoices();
-    var round = { equation: equation, choices: choices };
-
-    return round;
-  };
-
   this.isChoiceCorrect = function (choice) {
     return choice === answer;
   };
 
-  this.trivia = generateTrivia();
+  this.trivia = {
+    equation: generateEquation(),
+    choices: generateChoices()
+  };
 };
