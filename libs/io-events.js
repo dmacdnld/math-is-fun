@@ -1,5 +1,4 @@
 var sio = require('socket.io');
-var User = require('./user');
 var Round = require('./round');
 var users = [];
 
@@ -34,6 +33,7 @@ var ioEvents = function (server) {
       if (nameTaken) {
         io.sockets.socket(id).emit('user:invalid');
       } else {
+        users.push(username);
         io.sockets.socket(id).emit('user:joined', new Round().trivia);
       }
     });
