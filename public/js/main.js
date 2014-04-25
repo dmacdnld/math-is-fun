@@ -6,29 +6,33 @@ var Round = require('./components/Round');
 var io = require('socket.io-client');
 var socket = io.connect(window.location.hostname);
 
-var Game = React.createClass({
-  getInitialState: function () {
+var Main = React.createClass({
+  componentWillMount: function () {
     var that = this;
 
-    socket.on('user:joined', function (trivia) {
-      that.setState({
-        equation: trivia.equation,
-        choices: trivia.choices
-      });
+    socket.on('round:started', function (round) {
+      that.setState({ trivia: round.trivia });
     });
 
-    return { equation: null, choices: null };
+    socket.on('player:joined', function (players) {
+      that.setState({ players: players });
+    });
   },
+
+  getInitialState: function () {
+    return { trivia: null };
+  },
+
   render: function() {
-    return this.state.equation
-      ? <Round equation={this.state.equation} choices={this.state.choices} />
+    return this.state.trivia
+      ? <Round trivia={ this.state.trivia } players={ this.state.players } />
       : <JoinForm />;
   }
 });
 
-module.exports = Game;
-
 React.renderComponent(
-  <Game />,
-  document.getElementById('game')
+  <Main />,
+  document.getElementById('main')
 );
+
+module.exports = Main;

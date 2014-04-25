@@ -1,30 +1,55 @@
 /** @jsx React.DOM */
 
 var React = require('react');
+var io = require('socket.io-client');
+var socket = io.connect(window.location.hostname);
 
 module.exports = React.createClass({
-    render: function () {
-      return (
-        <div>
-          <div id="equation">{this.props.equation}</div>
-          <div id="result" />
-          <form action="/" method="post">
-            <input type="hidden" name="answerA" value={this.props.choices[0]} />
-            <button id="buttonA" type="submit">{this.props.choices[0]}</button>
-          </form>
-          <form action="/" method="post">
-            <input type="hidden" name="answerB" value={this.props.choices[1]} />
-            <button id="buttonB" type="submit">{this.props.choices[1]}</button>
-          </form>
-          <form action="/" method="post">
-            <input type="hidden" name="answerC" value={this.props.choices[2]} />
-            <button id="buttonC" type="submit">{this.props.choices[2]}</button>
-          </form>
-          <form action="/" method="post">
-            <input type="hidden" name="answerD" value={this.props.choices[3]} />
-            <button id="buttonD" type="submit">{this.props.choices[3]}</button>
-          </form>
-        </div>
-      );
-    }
+  componentWillMount: function () {
+    var that = this;
+
+    socket.on('choice:validated', function (choiceIsCorrect) {
+      that.setState({ choiceIsCorrect: choiceIsCorrect });
+    });
+  },
+
+  getInitialState: function () {
+    return { choiceIsCorrect: null };
+  },
+
+  submitChoice: function (event) {
+    event.preventDefault();
+
+    var choice = event.currentTarget.firstChild.value;
+
+    return socket.emit('choice:submitted', choice);
+  },
+
+  render: function () {
+    var choices = this.props.trivia.choices;
+    var equation = this.props.trivia.equation;
+
+    return (
+      <div>
+        <div id="equation">{ equation }</div>
+        <div id="result" />
+        <form onSubmit={this.submitChoice}>
+          <input type="hidden" value={ choices[0] } />
+          <button type="submit">{ choices[0] }</button>
+        </form>
+        <form onSubmit={this.submitChoice}>
+          <input type="hidden" value={ choices[1] } />
+          <button type="submit">{ choices[1] }</button>
+        </form>
+        <form onSubmit={this.submitChoice}>
+          <input type="hidden" value={ choices[2] } />
+          <button type="submit">{ choices[2] }</button>
+        </form>
+        <form onSubmit={this.submitChoice}>
+          <input type="hidden" value={ choices[3] } />
+          <button type="submit">{ choices[3] }</button>
+        </form>
+      </div>
+    );
+  }
 });

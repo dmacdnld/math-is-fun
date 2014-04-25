@@ -10,6 +10,8 @@ node_modules/browserify
 node_modules/envify
 node_modules/reactify
 node_modules/watchify
+.bundle.js
 
 # Logs
 logs/*.log
+public/js/npm-debug.log

@@ -1,4 +1,6 @@
-module.exports = function () {
+var Round = function () {
+  "use strict";
+
   var answer, correctChoice;
 
   var getDecimalPlaces = function (number) {
@@ -44,7 +46,6 @@ module.exports = function () {
 
   var setCorrectChoice = function (choices) {
     correctChoice = Math.floor(Math.random() * 4);
-
     choices[correctChoice] = answer;
   };
 
@@ -69,7 +70,6 @@ module.exports = function () {
 
     for (var i = 0, length = 4; i < length; i++) {
       if (i === correctChoice) continue;
-
       choices[i] = generateChoice();
     }
 
@@ -85,3 +85,5 @@ module.exports = function () {
     choices: generateChoices()
   };
 };
+
+module.exports = Round;

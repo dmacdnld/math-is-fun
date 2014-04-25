@@ -5,26 +5,35 @@ var io = require('socket.io-client');
 var socket = io.connect(window.location.hostname);
 
 module.exports = React.createClass({
-  getInitialState: function () {
+  componentWillMount: function () {
     var that = this;
 
-    socket.on('user:invalid', function () {
-      that.setState({ invalid: true });
+    socket.on('player:invalid', function () {
+      that.setState({ playerInvalid: true });
     });
-
-    return { invalid: false };
   },
+
+  getInitialState: function () {
+    return { playerInvalid: false };
+  },
+
   submitForm: function (event) {
     event.preventDefault();
 
-    var username = this.refs.username.getDOMNode().value.trim();
-    return socket.emit('user:applied', username);
+    var name = this.refs.name.getDOMNode().value.trim();
+    return socket.emit('player:applied', name);
   },
+
   render: function () {
+    var errorMessageStyle = {
+      display: this.state.playerInvalid ? '' : 'none'
+    };
+
     return (
       <form onSubmit={this.submitForm}>
-        <label htmlFor='username'>Enter a username</label>
-        <input id='username' type='text' placeholder='e.g. Mathemagician' ref='username'/>
+        <label htmlFor='name'>Pick a name</label><br />
+        <input id='name' type='text' placeholder='e.g. Mathemagician' ref='name'/><br />
+        <div style={errorMessageStyle}>Name already taken</div>
         <button type='submit'>Join the game!</button>
       </form>
     );
