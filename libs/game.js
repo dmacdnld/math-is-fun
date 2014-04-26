@@ -20,14 +20,18 @@ var Game = function () {
       intervalsLength--;
     }
 
-    setInterval(function () {
+    var interval = setInterval(function () {
       if (rounds.length) {
-        return emitNewRound(rounds.pop());
+        emitNewRound(rounds.pop());
       } else {
-        return emitGameEnd();
+        emitGameEnd();
       }
 
-    }, ROUND_DURATION, intervalsLength);
+      intervalsLength--;
+      if (!intervalsLength) {
+        clearInterval(interval);
+      }
+    }, ROUND_DURATION);
   };
 
   this.isInProgress = function () {
