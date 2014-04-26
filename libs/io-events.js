@@ -40,14 +40,18 @@ module.exports = function (server) {
         if (game.hasPlayerOfName(name)) {
           client.emit('player:invalid');
         } else {
-          client.join('game');
           game.addPlayer(new Player(name));
-          client.broadcast.to('game').emit('player:joined', game.players);
+
+          client.join('game');
+          io.sockets.in('game').emit('player:joined', game.players);
         }
       } else {
-        client.join('game');
         game = new Game();
         game.addPlayer(new Player(name));
+
+        client.join('game');
+        io.sockets.in('game').emit('player:joined', game.players);
+
         game.cycleRounds(emitNewRound, emitGameEnd, true);
       }
     });

@@ -3,6 +3,7 @@
 var React = require('react');
 var JoinForm = require('./components/JoinForm');
 var Round = require('./components/Round');
+var PlayerList = require('./components/PlayerList');
 var io = require('socket.io-client');
 var socket = io.connect(window.location.hostname);
 
@@ -24,9 +25,21 @@ var Main = React.createClass({
   },
 
   render: function() {
-    return this.state.trivia
-      ? <Round trivia={ this.state.trivia } players={ this.state.players } />
-      : <JoinForm />;
+    var trivia = this.state.trivia;
+    var JsxToRender;
+
+    if (trivia) {
+      JsxToRender = (
+        <div>
+          <Round trivia={ trivia } />
+          <PlayerList players={ this.state.players } />
+        </div>
+      );
+    } else {
+      JsxToRender = <JoinForm />
+    }
+
+    return JsxToRender;
   }
 });
 
