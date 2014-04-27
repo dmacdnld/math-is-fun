@@ -43,7 +43,8 @@ module.exports = function (server) {
           game.addPlayer(new Player(name));
 
           client.join('game');
-          io.sockets.in('game').emit('player:joined', game.players);
+          client.broadcast.to('game').emit('player:joined', game.players)
+          client.emit('player:joined', game.players, game.currentRound)
         }
       } else {
         game = new Game();

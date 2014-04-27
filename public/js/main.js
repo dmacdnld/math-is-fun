@@ -15,8 +15,15 @@ var Main = React.createClass({
       that.setState({ trivia: round.trivia });
     });
 
-    socket.on('player:joined', function (players) {
-      that.setState({ players: players });
+    socket.on('player:joined', function (players, round) {
+      if (round) {
+        that.setState({
+          players: players,
+          trivia: round.trivia
+        });
+      } else {
+        that.setState({ players: players });
+      }
     });
   },
 

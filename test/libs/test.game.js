@@ -65,6 +65,25 @@ describe('Game', function () {
       done();
     });
 
+    it('should store the current round as each round starts', function (done) {
+      var lastRound = game.currentRound;
+
+      game.cycleRounds(stub1, stub2);
+
+      should.equal(lastRound, undefined);
+
+      for (var i = 0; i < intervalsLength; i++) {
+        sandbox.clock.tick(ROUND_DURATION);
+        if (i < ROUNDS_LENGTH) {
+          game.currentRound.should.be.an.instanceof(Round);
+          game.currentRound.should.not.equal(lastRound);
+          lastRound = game.currentRound;
+        }
+      }
+
+      done();
+    });
+
     it('should call the second callback after the first callback call count is the same as the number of game rounds', function (done) {
       game.cycleRounds(stub1, stub2);
 

@@ -5,7 +5,7 @@ var Game = function () {
   "use strict";
 
   var ROUNDS_LENGTH = 8;
-  var ROUND_DURATION = 45000;
+  var ROUND_DURATION = 10000;
   var rounds = (function () {
     var rounds = new Array(Math.max(0, ROUNDS_LENGTH));
     for (var i = 0; i < ROUNDS_LENGTH; i++) rounds[i] = new Round();
@@ -16,13 +16,15 @@ var Game = function () {
     var intervalsLength = ROUNDS_LENGTH + 1;
 
     if (startNow) {
-      emitNewRound(rounds.pop());
+      this.currentRound = rounds.pop();
+      emitNewRound(this.currentRound);
       intervalsLength--;
     }
 
-    var interval = setInterval(function () {
+    var interval = setInterval(function (self) {
       if (rounds.length) {
-        emitNewRound(rounds.pop());
+        self.currentRound = rounds.pop();
+        emitNewRound(self.currentRound);
       } else {
         emitGameEnd();
       }
@@ -31,7 +33,7 @@ var Game = function () {
       if (!intervalsLength) {
         clearInterval(interval);
       }
-    }, ROUND_DURATION);
+    }, ROUND_DURATION, this);
   };
 
   this.isInProgress = function () {
