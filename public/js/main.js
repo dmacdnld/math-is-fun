@@ -11,19 +11,34 @@ var Main = React.createClass({
   componentWillMount: function () {
     var that = this;
 
-    socket.on('round:started', function (round) {
-      that.setState({ trivia: round.trivia });
+    socket.on('round:started', function (trivia) {
+      that.setState({
+        trivia: trivia,
+        correctChoice: null,
+        incorrectChoice: null
+      });
     });
 
-    socket.on('player:joined', function (players, round) {
-      if (round) {
+    socket.on('player:joined', function (players, trivia) {
+      if (trivia) {
         that.setState({
           players: players,
-          trivia: round.trivia
+          trivia: trivia
         });
       } else {
         that.setState({ players: players });
       }
+    });
+
+    socket.on('round:answered', function (players, answer) {
+      that.setState({
+        players: players,
+        correctChoice: answer
+      });
+    });
+
+    socket.on('choice:incorrect', function (choice) {
+        that.setState({ incorrectChoice: choice });
     });
   },
 
@@ -38,7 +53,7 @@ var Main = React.createClass({
     if (trivia) {
       JsxToRender = (
         <div>
-          <Round trivia={ trivia } />
+          <Round trivia={ trivia } correctChoice={ this.state.correctChoice } incorrectChoice={ this.state.incorrectChoice }/>
           <PlayerList players={ this.state.players } />
         </div>
       );

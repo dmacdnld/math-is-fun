@@ -8,6 +8,12 @@ module.exports = function (server) {
 
   var io = sio.listen(server);
   var game;
+  var emitNewRound = function (trivia) {
+    io.sockets.in('game').emit('round:started', trivia);
+  };
+  var emitGameEnd = function () {
+    io.sockets.in('game').emit('game:ended');
+  };
 
   io.configure('production', function(){
     io.enable('browser client minification');
@@ -29,38 +35,55 @@ module.exports = function (server) {
 
   io.sockets.on('connection', function (client) {
     client.on('player:applied', function (name) {
-      var emitNewRound = function (round) {
-        io.sockets.in('game').emit('round:started', round);
-      };
-      var emitGameEnd = function () {
-        io.sockets.in('game').emit('game:ended');
-      };
-
       if (game && game.isInProgress()) {
         if (game.hasPlayerOfName(name)) {
           client.emit('player:invalid');
         } else {
-          game.addPlayer(new Player(name));
+          game.addPlayer(new Player(client.id, name));
 
           client.join('game');
-          client.broadcast.to('game').emit('player:joined', game.players)
-          client.emit('player:joined', game.players, game.currentRound)
+          client.broadcast.to('game').emit('player:joined', game.players);
+          client.emit('player:joined', game.players, game.currentRound.trivia);
         }
       } else {
         game = new Game();
-        game.addPlayer(new Player(name));
+        game.addPlayer(new Player(client.id, name));
 
         client.join('game');
         io.sockets.in('game').emit('player:joined', game.players);
 
-        game.cycleRounds(emitNewRound, emitGameEnd, true);
+        game.startRound(emitNewRound, emitGameEnd, true);
       }
     });
 
     client.on('choice:submitted', function (choice) {
+      var player = game.getPlayer(client.id);
+      var currentRound = game.currentRound;
+      var alreadyAnswered = currentRound.hasPlayerAnswered(player);
+      var choiceIsCorrect;
+      var allPlayersAnswered;
 
-      console.log(choice);
+      if (alreadyAnswered) return;
 
+      currentRound.playersAnswered.push(player);
+
+      choiceIsCorrect = currentRound.isChoiceCorrect(choice);
+      allPlayersAnswered = currentRound.playersAnswered.length === game.players.length;
+
+      if (choiceIsCorrect) {
+        player.addPoints();
+        io.sockets.in('game').emit('round:answered', game.players, game.currentRound.getAnswer());
+      }
+      else {
+        client.emit('choice:incorrect', choice);
+      }
+
+      if (choiceIsCorrect || allPlayersAnswered) {
+        clearTimeout(game.timeout);
+        setTimeout(function () {
+          game.startRound(emitNewRound, emitGameEnd, true);
+        }, 2000);
+      }
     });
   });
 };

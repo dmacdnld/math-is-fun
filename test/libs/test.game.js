@@ -4,7 +4,7 @@ var Player = require('../../libs/player');
 
 describe('Game', function () {
 
-  describe('#cycleRounds()', function () {
+  describe('#startRound()', function () {
     var game;
     var ROUNDS_LENGTH;
     var ROUND_DURATION;
@@ -20,7 +20,7 @@ describe('Game', function () {
       intervalsLength = ROUNDS_LENGTH + 1;
 
       sandbox = sinon.sandbox.create();
-      sandbox.useFakeTimers(0, 'setInterval');
+      sandbox.useFakeTimers(0, 'setTimeout');
       stub1 = sandbox.stub();
       stub2 = sandbox.stub();
 
@@ -33,7 +33,7 @@ describe('Game', function () {
     });
 
     it('should call first callback on an interval as many times as there are game rounds', function (done) {
-      game.cycleRounds(stub1, stub2);
+      game.startRound(stub1, stub2);
 
       for (var i = 0; i < intervalsLength; i++) {
         stub1.should.have.callCount(i);
@@ -49,7 +49,8 @@ describe('Game', function () {
     });
 
     it('should call the first callback immediately if told to and then call it on an interval until the total call count is the same as the number of game rounds', function (done) {
-      game.cycleRounds(stub1, stub2, true);
+      game.startRound(stub1, stub2, true);
+      sandbox.clock.tick(1);
       stub1.should.have.been.called;
 
       for (var i = 1; i < intervalsLength; i++) {
@@ -68,7 +69,7 @@ describe('Game', function () {
     it('should store the current round as each round starts', function (done) {
       var lastRound = game.currentRound;
 
-      game.cycleRounds(stub1, stub2);
+      game.startRound(stub1, stub2);
 
       should.equal(lastRound, undefined);
 
@@ -85,7 +86,7 @@ describe('Game', function () {
     });
 
     it('should call the second callback after the first callback call count is the same as the number of game rounds', function (done) {
-      game.cycleRounds(stub1, stub2);
+      game.startRound(stub1, stub2);
 
       for (var i = 0; i < intervalsLength; i++) {
         stub2.should.not.have.been.called;
@@ -105,8 +106,8 @@ describe('Game', function () {
         var game = new Game();
         var testName = 'Test Name';
         var otherName = 'Other Name'
-        var player1 = new Player(testName);
-        var player2 = new Player(otherName);
+        var player1 = new Player(1, testName);
+        var player2 = new Player(2, otherName);
 
         game.addPlayer(player1);
         game.addPlayer(player2);

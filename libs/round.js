@@ -76,6 +76,12 @@ var Round = function () {
     return choices;
   };
 
+  this.playersAnswered = [];
+
+  this.getAnswer = function () {
+    return answer;
+  }
+
   this.isChoiceCorrect = function (choice) {
     return choice === answer;
   };
@@ -84,6 +90,10 @@ var Round = function () {
     equation: generateEquation(),
     choices: generateChoices()
   };
+};
+
+Round.prototype.hasPlayerAnswered = function (player) {
+  return this.playersAnswered.indexOf(player) !== -1;
 };
 
 module.exports = Round;

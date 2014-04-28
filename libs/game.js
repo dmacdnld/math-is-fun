@@ -1,5 +1,6 @@
 var Round = require('./round');
 var Player = require('./player');
+var find = require('lodash.find');
 
 var Game = function () {
   "use strict";
@@ -12,28 +13,20 @@ var Game = function () {
     return rounds;
   })();
 
-  this.cycleRounds = function (emitNewRound, emitGameEnd, startNow) {
-    var intervalsLength = ROUNDS_LENGTH + 1;
+  this.startRound = function (emitNewRound, emitGameEnd, startNow) {
+    var delay = startNow ? 1 : ROUND_DURATION;
+    var alreadyOver = this.over;
 
-    if (startNow) {
-      this.currentRound = rounds.pop();
-      emitNewRound(this.currentRound);
-      intervalsLength--;
-    }
-
-    var interval = setInterval(function (self) {
+    this.timeout = setTimeout(function (self) {
       if (rounds.length) {
         self.currentRound = rounds.pop();
-        emitNewRound(self.currentRound);
-      } else {
+        emitNewRound(self.currentRound.trivia);
+        self.startRound(emitNewRound, emitGameEnd);
+      } else if (!alreadyOver) {
+        self.over = true;
         emitGameEnd();
       }
-
-      intervalsLength--;
-      if (!intervalsLength) {
-        clearInterval(interval);
-      }
-    }, ROUND_DURATION, this);
+    }, delay, this);
   };
 
   this.isInProgress = function () {
@@ -58,6 +51,12 @@ Game.prototype.hasPlayerOfName = function (name) {
 Game.prototype.addPlayer = function (player) {
   if (!(player instanceof Player)) return null;
   return this.players.push(player);
+};
+
+Game.prototype.getPlayer = function (id) {
+  return find(this.players, function (player) {
+    return player.id === id;
+  });
 };
 
 module.exports = Game;

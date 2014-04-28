@@ -8,7 +8,7 @@ module.exports = React.createClass({
     return (
       <ul>
         {this.props.players.map(function (player) {
-          return <Player player={player} />;
+          return <Player player={ player } />;
         })}
       </ul>
     );
