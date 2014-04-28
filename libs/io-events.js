@@ -13,6 +13,12 @@ module.exports = function (server) {
   };
   var emitGameEnd = function () {
     io.sockets.in('game').emit('game:ended');
+    setTimeout(function () {
+      var players = game.players;
+      game = new Game();
+      game.players = players;
+      game.startRound(emitNewRound, emitGameEnd, true);
+    }, 5000);
   };
 
   io.configure('production', function(){
