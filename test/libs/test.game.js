@@ -100,78 +100,120 @@ describe('Game', function () {
 
   });
 
-    describe('#hasPlayerOfName()', function () {
+  describe('#hasPlayerOfName()', function () {
+    var game;
+    var name1;
+    var name2;
+    var name3;
+    var player1;
+    var player2;
+    var player3;
 
-      it('should return true if any player has the same name as the one passed in', function (done) {
-        var game = new Game();
-        var testName = 'Test Name';
-        var otherName = 'Other Name'
-        var player1 = new Player(1, testName);
-        var player2 = new Player(2, otherName);
+    beforeEach(function (done) {
+      game = new Game();
+      name1 = 'Name 1';
+      name2 = 'Name 2';
+      player1 = new Player(1, name1);
+      player2 = new Player(2, name2);
 
-        game.addPlayer(player1);
-        game.addPlayer(player2);
+      game.players.push(player1, player2);
 
-        game.hasPlayerOfName(testName).should.be.true;
-
-        done();
-      });
-
-      it('should return false if no player has the same name as the one passed in', function (done) {
-        var game = new Game();
-        var testName = 'Test Name';
-        var otherName1 = 'Other Name 1';
-        var otherName2 = 'Other Name 2';
-        var player1 = new Player(otherName1);
-        var player2 = new Player(otherName2);
-
-        game.addPlayer(player1);
-        game.addPlayer(player2);
-
-        game.hasPlayerOfName(testName).should.be.false;
-
-        done();
-      });
-
+      done();
     });
 
-    describe('#addPlayer()', function () {
+    it('should return true if any player has the same name as the one passed in', function (done) {
+      game.hasPlayerOfName(name1).should.be.true;
 
-      it('should add the passed in player to the game\'s player list', function (done) {
-        var game = new Game();
-        var player = new Player('Name');
-
-        game.addPlayer(player);
-
-        game.players.should.include(player);
-
-        done();
-      });
-
-      it('should only add one player', function (done) {
-        var game = new Game();
-        var player = new Player('Name');
-        var current = game.players.length;
-        var expected = current + 1;
-        var result = game.addPlayer(player);
-
-        result.should.be.a('number');
-        result.should.equal(expected);
-
-        done();
-      });
-
-      it('should not add non-player values', function (done) {
-        var game = new Game();
-        var nonPlayer = {};
-        var result = game.addPlayer(nonPlayer);
-
-        should.equal(result, null);
-        game.players.should.be.empty;
-
-        done();
-      });
-
+      done();
     });
+
+    it('should return false if no player has the same name as the one passed in', function (done) {
+      game.hasPlayerOfName('').should.be.false;
+
+      done();
+    });
+
+  });
+
+  describe('#addPlayer()', function () {
+    var game;
+    var player;
+
+    beforeEach(function (done) {
+      game = new Game();
+      player = new Player(1, 'Name');
+
+      done();
+    });
+
+    it('should add the passed in player to the game\'s player list', function (done) {
+      game.addPlayer(player);
+
+      game.players.should.include(player);
+
+      done();
+    });
+
+    it('should only add one player', function (done) {
+      var current = game.players.length;
+      var expected = current + 1;
+      var result = game.addPlayer(player);
+
+      result.should.be.a('number');
+      result.should.equal(expected);
+
+      done();
+    });
+
+    it('should not add non-player values', function (done) {
+      var result = game.addPlayer();
+
+      should.equal(result, null);
+      game.players.should.be.empty;
+
+      done();
+    });
+
+  });
+
+  describe('#removePlayer()', function () {
+    var game;
+    var player1;
+    var player2;
+    var player3;
+
+    beforeEach(function (done) {
+      game = new Game();
+      player1 = new Player(1, 'One');
+      player2 = new Player(2, 'Two');
+      player3 = new Player(3, 'Three');
+
+      game.players.push(player1, player2, player3);
+
+      done();
+    });
+
+    it('should remove the passed in player from the game\'s player list', function (done) {
+      game.removePlayer(player1);
+      game.players.should.not.include(player1);
+
+      done();
+    });
+
+    it('should only remove one player', function (done) {
+      game.removePlayer(player1);
+      game.players.length.should.equal(2);
+
+      done();
+    });
+
+    it('should return null if player not found', function (done) {
+      var result = game.removePlayer();
+      should.equal(result, null);
+
+      done();
+    });
+
+  });
 
 });

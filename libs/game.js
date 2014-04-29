@@ -55,7 +55,7 @@ Game.prototype.addPlayer = function (player) {
 
 Game.prototype.removePlayer = function (player) {
   var index = this.players.indexOf(player);
-  if (index != 0) {
+  if (index != -1) {
     return this.players.splice(index, 1);
   } else {
     return null;
