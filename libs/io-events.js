@@ -99,7 +99,11 @@ module.exports = function (server) {
 
         if (player) {
           game.removePlayer(player);
-          io.sockets.in('game').emit('player:left', game.players);
+          if (game.players.length) {
+            io.sockets.in('game').emit('player:left', game.players);
+          } else {
+            game.end();
+          }
         }
       }
     });

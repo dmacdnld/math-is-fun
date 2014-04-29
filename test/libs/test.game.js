@@ -236,4 +236,55 @@ describe('Game', function () {
 
   });
 
+  describe('#end()', function () {
+    var game;
+    var player1;
+    var player2;
+    var stub1;
+    var stub2;
+
+    beforeEach(function (done) {
+      game = new Game();
+      player1 = new Player(1, 'One');
+      player2 = new Player(2, 'Two');
+      stub1 = sinon.stub();
+      stub2 = sinon.stub();
+
+      game.players.push(player1, player2);
+
+      done();
+    });
+
+    /*
+    this.end = function () {
+      clearTimeout(this.timeout);
+      rounds = [];
+      this.players = [];
+    };
+    */
+
+    it('should clear the active timeout', function (done) {
+      var timeout;
+
+      game.startRound(stub1, stub2);
+      var timeout = game.timeout;
+
+      game.end();
+      timeout._idleTimeout.should.equal(-1);
+
+      done();
+    });
+
+    it('should remove all rounds', function () {
+      game.end();
+      game.rounds.length.should.equal(0);
+    });
+
+    it('should remove all players', function () {
+      game.end();
+      game.players.length.should.equal(0);
+    });
+
+  });
+
 });

@@ -7,7 +7,7 @@ var invoke = require('lodash.invoke');
 var Game = function () {
   "use strict";
 
-  var ROUNDS_LENGTH = 1;
+  var ROUNDS_LENGTH = 8;
   var ROUND_DURATION = 10000;
   var rounds = (function () {
     var rounds = new Array(Math.max(0, ROUNDS_LENGTH));
@@ -35,10 +35,17 @@ var Game = function () {
     return rounds.length > 0;
   };
 
+  this.end = function () {
+    clearTimeout(this.timeout);
+    rounds.length = 0;
+    this.players.length = 0;
+  };
+
   this.players = [];
 
   // Expose private variable for testing
   if (process.env.NODE_ENV === 'test') {
+    this.rounds = rounds;
     this.ROUND_DURATION = ROUND_DURATION;
     this.ROUNDS_LENGTH = ROUNDS_LENGTH;
   }
@@ -77,6 +84,6 @@ Game.prototype.getWinner = function () {
 
 Game.prototype.resetPoints = function () {
   return invoke(this.players, 'resetPoints')
-}
+};
 
 module.exports = Game;
