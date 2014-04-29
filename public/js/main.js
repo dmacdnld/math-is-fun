@@ -47,7 +47,17 @@ var Main = React.createClass({
     });
 
     socket.on('game:over', function (winner) {
-      that.setState({ winner: winner });
+      var secondsCount = 5;
+
+      that.setState({
+        winner: winner,
+        secondsCount: secondsCount--
+      });
+      that.interval = setInterval(function () {
+        that.setState({ secondsCount: secondsCount-- });
+
+        if (!secondsCount) clearInterval(that.interval);
+      }, 1000);
     });
   },
 
@@ -58,12 +68,24 @@ var Main = React.createClass({
   render: function() {
     var winner = this.state.winner;
     var trivia = this.state.trivia;
+    var secondsCount = this.state.secondsCount;
+    var secondPluralization = secondsCount > 1 ? 'seconds' : 'second';
     var JsxToRender;
 
     if (winner) {
-      JsxToRender = <div>{ winner.name } wins with { winner.points } points!</div>;
+      JsxToRender = (
+        <div>
+          <div>{ winner.name } wins with { winner.points } points!</div>
+          <div>Next game starts in { secondsCount } { secondPluralization }!</div>
+        </div>
+      );
     } else if (winner === null) {
-      JsxToRender = <div>No one won this game :(</div>;
+      JsxToRender = (
+        <div>
+          <div>No one won this game :(</div>
+          <div>Next game in { secondsCount } { secondPluralization }!</div>
+        </div>
+      );
     } else if (trivia) {
       JsxToRender = (
         <div>
