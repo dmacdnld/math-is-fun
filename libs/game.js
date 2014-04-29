@@ -1,11 +1,13 @@
 var Round = require('./round');
 var Player = require('./player');
 var find = require('lodash.find');
+var max = require('lodash.max');
+var invoke = require('lodash.invoke');
 
 var Game = function () {
   "use strict";
 
-  var ROUNDS_LENGTH = 8;
+  var ROUNDS_LENGTH = 1;
   var ROUND_DURATION = 10000;
   var rounds = (function () {
     var rounds = new Array(Math.max(0, ROUNDS_LENGTH));
@@ -67,5 +69,14 @@ Game.prototype.getPlayer = function (id) {
     return player.id === id;
   });
 };
+
+Game.prototype.getWinner = function () {
+  var winner = max(this.players, 'points');
+  return winner.points > 0 ? winner : null;
+};
+
+Game.prototype.resetPoints = function () {
+  return invoke(this.players, 'resetPoints')
+}
 
 module.exports = Game;

@@ -216,4 +216,24 @@ describe('Game', function () {
 
   });
 
+  describe('#resetPoints()', function () {
+
+    it('should invoke each players \'#resetPoints\' method', function (done) {
+      var game = new Game();
+      var player1 = new Player(1, 'One');
+      var player2 = new Player(2, 'Two');
+      var spy1 = sinon.spy(player1, 'resetPoints');
+      var spy2 = sinon.spy(player2, 'resetPoints');
+
+      game.players.push(player1, player2);
+      game.resetPoints();
+
+      spy1.should.have.been.calledOnce;
+      spy2.should.have.been.calledOnce;
+
+      done();
+    });
+
+  });
+
 });

@@ -12,11 +12,12 @@ module.exports = function (server) {
     io.sockets.in('game').emit('round:started', trivia);
   };
   var emitGameEnd = function () {
-    io.sockets.in('game').emit('game:ended');
+    io.sockets.in('game').emit('game:over', game.getWinner());
     setTimeout(function () {
       var players = game.players;
       game = new Game();
       game.players = players;
+      game.resetPoints();
       game.startRound(emitNewRound, emitGameEnd, true);
     }, 5000);
   };

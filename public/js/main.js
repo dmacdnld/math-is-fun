@@ -14,8 +14,9 @@ var Main = React.createClass({
     socket.on('round:started', function (trivia) {
       that.setState({
         trivia: trivia,
-        correctChoice: null,
-        incorrectChoice: null
+        correctChoice: undefined,
+        incorrectChoice: undefined,
+        winner: undefined
       });
     });
 
@@ -42,19 +43,28 @@ var Main = React.createClass({
     });
 
     socket.on('choice:incorrect', function (choice) {
-        that.setState({ incorrectChoice: choice });
+      that.setState({ incorrectChoice: choice });
+    });
+
+    socket.on('game:over', function (winner) {
+      that.setState({ winner: winner });
     });
   },
 
   getInitialState: function () {
-    return { trivia: null };
+    return {};
   },
 
   render: function() {
+    var winner = this.state.winner;
     var trivia = this.state.trivia;
     var JsxToRender;
 
-    if (trivia) {
+    if (winner) {
+      JsxToRender = <div>{ winner.name } wins with { winner.points } points!</div>;
+    } else if (winner === null) {
+      JsxToRender = <div>No one won this game :(</div>;
+    } else if (trivia) {
       JsxToRender = (
         <div>
           <Round trivia={ trivia } correctChoice={ this.state.correctChoice } incorrectChoice={ this.state.incorrectChoice }/>

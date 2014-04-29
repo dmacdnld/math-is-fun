@@ -31,9 +31,24 @@ describe('Player',function () {
   describe('#addPoints', function () {
 
     it('should add points', function (done) {
-      var player = new Player();
       var expected = player.points + player.ROUND_POINTS;
       var actual = player.addPoints();
+
+      actual.should.equal(expected);
+
+      done();
+    });
+
+  });
+
+  describe('#resetPoints', function () {
+
+    it('should reset points', function (done) {
+      var expected = 0;
+      var actual;
+
+      player.addPoints();
+      actual = player.resetPoints();
 
       actual.should.equal(expected);
 
