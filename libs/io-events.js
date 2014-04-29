@@ -13,11 +13,14 @@ module.exports = function (server) {
   };
   var emitGameEnd = function () {
     io.sockets.in('game').emit('game:over', game.getWinner());
+
+    var currentPlayers = game.players;
+    game = new Game();
+    game.players = currentPlayers;
+    game.resetPoints();
+
     setTimeout(function () {
-      var players = game.players;
-      game = new Game();
-      game.players = players;
-      game.resetPoints();
+      io.sockets.in('game').emit('player:joined', game.players);
       game.startRound(emitNewRound, emitGameEnd, true);
     }, 5000);
   };
