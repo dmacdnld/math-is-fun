@@ -1,12 +1,15 @@
 var Round = require('../../libs/round');
+var Player = require('../../libs/player');
 
 describe('Round',function () {
 
   describe('#trivia', function () {
+    var round;
     var trivia;
 
     beforeEach(function (done) {
-      trivia = new Round().trivia;
+      round = new Round();
+      trivia = round.trivia;
 
       done();
     });
@@ -41,6 +44,15 @@ describe('Round',function () {
       done();
     });
 
+    it('should contain the answer in the choices', function (done) {
+      var choices = trivia.choices;
+      var answer = round.getAnswer();
+
+      choices.should.contain(answer);
+
+      done();
+    });
+
   });
 
   describe('#isChoiceCorrect()', function () {
@@ -48,17 +60,8 @@ describe('Round',function () {
     var answer;
 
     beforeEach(function (done) {
-      var getDecimalPlaces = function (number) {
-        var result = /^-?[0-9]+\.([0-9]+)$/.exec(number);
-        return result === null ? 0 : result[1].length;
-      };
-
       round = new Round();
-      answer = eval(round.trivia.equation);
-
-      if (getDecimalPlaces(answer) > 2) {
-        answer = parseFloat(answer.toFixed(2));
-      }
+      answer = round.getAnswer();
 
       done();
     });
@@ -73,6 +76,33 @@ describe('Round',function () {
       var wrongAnswer = answer + 1;
 
       round.isChoiceCorrect(wrongAnswer).should.be.false;
+
+      done();
+    });
+
+  });
+
+  describe('#hasPlayerAnswered()', function () {
+    var round;
+    var player;
+
+    beforeEach(function (done) {
+      round = new Round();
+      player = new Player(1, 'Name');
+
+      done();
+    });
+
+    it('should return true if player has answered', function (done) {
+      round.playersAnswered.push(player);
+      round.hasPlayerAnswered(player).should.be.true;
+
+      done();
+    });
+
+    it('should return false if player has not answered', function (done) {
+      round.playersAnswered = [];
+      round.hasPlayerAnswered(player).should.be.false;
 
       done();
     });
