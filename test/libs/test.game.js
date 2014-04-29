@@ -255,14 +255,6 @@ describe('Game', function () {
       done();
     });
 
-    /*
-    this.end = function () {
-      clearTimeout(this.timeout);
-      rounds = [];
-      this.players = [];
-    };
-    */
-
     it('should clear the active timeout', function (done) {
       var timeout;
 
