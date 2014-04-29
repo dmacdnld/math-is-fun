@@ -12,7 +12,10 @@
   "dependencies": {
     "socket.io": "^0.9.16",
     "express": "^3.5.1",
-    "react": "^0.10.0"
+    "react": "^0.10.0",
+    "lodash.find": "^2.4.1",
+    "lodash.max": "^2.4.1",
+    "lodash.invoke": "^2.4.1"
   },
   "devDependencies": {
     "mocha": "^1.18.2",
@@ -20,7 +23,6 @@
     "socket.io-client": "^0.9.16",
     "sinon": "^1.9.1",
     "sinon-chai": "^2.5.0",
-    "lodash.find": "^2.4.1",
     "lodash.uniq": "^2.4.1",
     "reactify": "^0.11.0",
     "envify": "^1.2.1",
