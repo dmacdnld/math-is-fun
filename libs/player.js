@@ -3,20 +3,14 @@ module.exports = function (id, name) {
 
   this.id = id;
   this.name = name;
-
-  var points = 0;
-  var ROUND_POINTS = 10;
-
-  if (process.env.NODE_ENV === 'test') {
-    this.points = points;
-    this.ROUND_POINTS = ROUND_POINTS;
-  }
+  this.points = 0;
+  this.ROUND_POINTS = 10;
 
   this.addPoints = function () {
-    return points += ROUND_POINTS;
+    return this.points += this.ROUND_POINTS;
   };
 
   this.resetPoints = function () {
-    return points = 0;
+    return this.points = 0;
   };
 };
