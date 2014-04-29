@@ -91,5 +91,16 @@ module.exports = function (server) {
         }, 2000);
       }
     });
+
+    client.on('disconnect', function () {
+      if (game) {
+        var player = game && game.getPlayer(client.id);
+
+        if (player) {
+          game.removePlayer(player);
+          io.sockets.in('game').emit('player:left', game.players);
+        }
+      }
+    });
   });
 };

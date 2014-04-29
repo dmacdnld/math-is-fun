@@ -53,6 +53,15 @@ Game.prototype.addPlayer = function (player) {
   return this.players.push(player);
 };
 
+Game.prototype.removePlayer = function (player) {
+  var index = this.players.indexOf(player);
+  if (index != 0) {
+    return this.players.splice(index, 1);
+  } else {
+    return null;
+  }
+};
+
 Game.prototype.getPlayer = function (id) {
   return find(this.players, function (player) {
     return player.id === id;

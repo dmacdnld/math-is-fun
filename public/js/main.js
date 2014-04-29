@@ -30,6 +30,10 @@ var Main = React.createClass({
       }
     });
 
+    socket.on('player:left', function (players) {
+      that.setState({ players: players });
+    });
+
     socket.on('round:answered', function (players, answer) {
       that.setState({
         players: players,
