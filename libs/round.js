@@ -23,7 +23,7 @@ var Round = function () {
     };
     var operandA = generateNumber();
     var operandB = generateNumber();
-    var operatorIndex = Math.floor(Math.random() * 4);
+    var operatorIndex = Math.floor(Math.random() * 3);
     var equation;
 
     switch (operatorIndex) {
@@ -35,9 +35,6 @@ var Round = function () {
               break;
       case 2: equation = operandA + ' * ' + operandB;
               setAnswer(operandA * operandB);
-              break;
-      case 3: equation = operandA + ' / ' + operandB;
-              setAnswer(operandA / operandB);
               break;
     }
 
