@@ -14,14 +14,14 @@ module.exports = React.createClass({
 
   render: function () {
     var choice = this.props.choice;
-    var correctStyle = { color: '#0F0' };
-    var incorrectStyle = { color: '#F00' };
-    var style = this.props.correct ? correctStyle : this.props.incorrect ? incorrectStyle : {};
+    var correctClass = 'btn--correct';
+    var incorrectClass = 'btn--incorrect';
+    var className = this.props.correct ? correctClass : this.props.incorrect ? incorrectClass : '';
 
     return (
       <form onSubmit={ this.submitChoice }>
         <input type='hidden' value={ choice } />
-        <button type='submit' style={ style }>{ choice }</button>
+        <button type='submit' className={ 'btn ' + className } disabled={ this.props.roundOver }>{ choice }</button>
       </form>
     );
   }

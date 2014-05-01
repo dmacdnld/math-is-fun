@@ -22,10 +22,6 @@ module.exports = React.createClass({
 
     var name = this.refs.name.getDOMNode().value.trim();
 
-    if (name === '') {
-      return this.setState({ invalidReason: 'missing' });
-    }
-
     return socket.emit('player:applied', name);
   },
 
@@ -36,14 +32,15 @@ module.exports = React.createClass({
       missing: "Sorry, we need a name"
     };
     var errorMessage = errorMessages[invalidReason];
-    var errorStyle = invalidReason ? {} : { display: 'hidden' };
+    var errorClass = invalidReason ? 'error' : 'hidden';
 
     return (
-      <form onSubmit={this.submitForm}>
-        <label htmlFor='name'>Name</label><br />
-        <input id='name' type='text' placeholder='e.g. Mathemagician' ref='name'/><br />
-        <div style={errorStyle}>{ errorMessage }</div>
-        <button type='submit'>Join the game!</button>
+      <form id="join-form" onSubmit={this.submitForm}>
+        <label htmlFor='name'>Choose a name</label>
+        <input id='name' type='text' placeholder='e.g. Mathlete' ref='name' autofocus/>
+        <div className={ errorClass }>{ errorMessage }</div>
+        <small>or join as a guest</small>
+        <button className='btn btn--primary' type='submit'>Start playing!</button>
       </form>
     );
   }

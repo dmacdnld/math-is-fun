@@ -16,6 +16,7 @@ var Main = React.createClass({
         trivia: trivia,
         correctChoice: undefined,
         incorrectChoice: undefined,
+        roundOver: undefined,
         winner: undefined
       });
     });
@@ -38,16 +39,21 @@ var Main = React.createClass({
     socket.on('round:answered', function (players, answer) {
       that.setState({
         players: players,
-        correctChoice: answer
+        correctChoice: answer,
+        roundOver: true
       });
     });
 
-    socket.on('choice:incorrect', function (choice) {
-      that.setState({ incorrectChoice: choice });
+    socket.on('choice:incorrect', function (correctChoice, incorrectChoice) {
+      that.setState({
+        correctChoice: correctChoice,
+        incorrectChoice: incorrectChoice,
+        roundOver: true
+      });
     });
 
     socket.on('game:over', function (winner) {
-      var secondsCount = 5;
+      var secondsCount = 10;
 
       that.setState({
         winner: winner,
@@ -56,7 +62,7 @@ var Main = React.createClass({
       that.interval = setInterval(function () {
         that.setState({ secondsCount: secondsCount-- });
 
-        if (!secondsCount) clearInterval(that.interval);
+        if (secondsCount === 0) clearInterval(that.interval);
       }, 1000);
     });
   },
@@ -70,26 +76,29 @@ var Main = React.createClass({
     var trivia = this.state.trivia;
     var secondsCount = this.state.secondsCount;
     var secondPluralization = secondsCount > 1 ? 'seconds' : 'second';
+    var countDownMessage = 'Next game in ' + secondsCount + ' ' + secondPluralization + '!';
+    var startingMessage = 'Next game starting...';
+    var message = secondsCount > 0 ? countDownMessage : startingMessage;
     var JsxToRender;
 
     if (winner) {
       JsxToRender = (
-        <div>
-          <div>{ winner.name } wins with { winner.points } points!</div>
-          <div>Next game starts in { secondsCount } { secondPluralization }!</div>
+        <div id='game'>
+          <h2>{ winner.name } wins with { winner.points } points!</h2>
+          <div>{ message }</div>
         </div>
       );
     } else if (winner === null) {
       JsxToRender = (
-        <div>
-          <div>No one won this game :(</div>
-          <div>Next game in { secondsCount } { secondPluralization }!</div>
+        <div id='game'>
+          <h2>No winner this game :(</h2>
+          <div>{ message }</div>
         </div>
       );
     } else if (trivia) {
       JsxToRender = (
-        <div>
-          <Round trivia={ trivia } correctChoice={ this.state.correctChoice } incorrectChoice={ this.state.incorrectChoice }/>
+        <div id='game'>
+          <Round trivia={ trivia } correctChoice={ this.state.correctChoice } incorrectChoice={ this.state.incorrectChoice } roundOver={ this.state.roundOver }/>
           <PlayerList players={ this.state.players } />
         </div>
       );

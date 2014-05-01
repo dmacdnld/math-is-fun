@@ -22,7 +22,7 @@ module.exports = function (server) {
     setTimeout(function () {
       io.sockets.in('game').emit('player:joined', game.players);
       game.startRound(emitNewRound, emitGameEnd, true);
-    }, 5000);
+    }, 10000);
   };
 
   io.configure('production', function(){
@@ -85,14 +85,14 @@ module.exports = function (server) {
         io.sockets.in('game').emit('round:answered', game.players, game.currentRound.getAnswer());
       }
       else {
-        client.emit('choice:incorrect', choice);
+        client.emit('choice:incorrect', game.currentRound.getAnswer(), choice);
       }
 
       if (choiceIsCorrect || allPlayersAnswered) {
         clearTimeout(game.timeout);
         setTimeout(function () {
           game.startRound(emitNewRound, emitGameEnd, true);
-        }, 2000);
+        }, 5000);
       }
     });
 

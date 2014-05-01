@@ -9,17 +9,20 @@ module.exports = React.createClass({
   },
 
   render: function () {
-    var choices = this.props.trivia.choices;
-    var equation = this.props.trivia.equation;
-    var correctChoice = this.props.correctChoice;
-    var incorrectChoice = this.props.incorrectChoice;
+    var that = this;
 
     return (
-      <div>
-        <div id='equation'>{ equation }</div>
+      <div id='round'>
+        <h2 id='equation'>{ this.props.trivia.equation }</h2>
         <div id='result' />
-        {choices.map(function (choice) {
-          return <Choice choice={ choice } correct={ choice === correctChoice } incorrect={ choice === incorrectChoice } />;
+        {this.props.trivia.choices.map(function (choice) {
+          return (
+            <Choice
+              choice={ choice }
+              correct={ choice === that.props.correctChoice }
+              incorrect={ choice === that.props.incorrectChoice }
+              roundOver={ that.props.roundOver } />
+          );;
         })}
       </div>
     );

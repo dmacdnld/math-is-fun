@@ -6,7 +6,7 @@ var Player = require('./Player');
 module.exports = React.createClass({
   render: function () {
     return (
-      <ul>
+      <ul id='player-list'>
         {this.props.players.map(function (player) {
           return <Player player={ player } />;
         })}
