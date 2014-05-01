@@ -45,7 +45,7 @@ module.exports = function (server) {
 
   io.sockets.on('connection', function (client) {
     client.on('player:applied', function (name) {
-      if (game && game.isInProgress()) {
+      if (game) {
         if (game.hasPlayerOfName(name)) {
           client.emit('player:invalid');
         } else {

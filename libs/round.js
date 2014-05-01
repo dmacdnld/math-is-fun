@@ -77,7 +77,7 @@ var Round = function () {
 
   this.getAnswer = function () {
     return answer;
-  }
+  };
 
   this.isChoiceCorrect = function (choice) {
     return choice === answer;

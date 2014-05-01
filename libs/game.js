@@ -31,10 +31,6 @@ var Game = function () {
     }, delay, this);
   };
 
-  this.isInProgress = function () {
-    return rounds.length > 0;
-  };
-
   this.end = function () {
     clearTimeout(this.timeout);
     rounds.length = 0;
@@ -83,7 +79,7 @@ Game.prototype.getWinner = function () {
 };
 
 Game.prototype.resetPoints = function () {
-  return invoke(this.players, 'resetPoints')
+  return invoke(this.players, 'resetPoints');
 };
 
 module.exports = Game;
