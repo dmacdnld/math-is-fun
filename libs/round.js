@@ -7,12 +7,13 @@ var Round = function () {
     answer = newAnswer;
   };
 
+  var generateNumber = function (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
   var generateEquation = function () {
-    var generateNumber = function () {
-      return Math.ceil(Math.random() * 20);
-    };
-    var operandA = generateNumber();
-    var operandB = generateNumber();
+    var operandA = generateNumber(1, 20);
+    var operandB = generateNumber(1, 20);
     var operatorIndex = Math.floor(Math.random() * 3);
     var equation;
 
@@ -38,7 +39,9 @@ var Round = function () {
 
   var generateChoices = function () {
     var generateChoice = function (updatedChoice) {
-      var choice = updatedChoice || parseInt(Math.random() * answer, 10);
+      var min = answer - generateNumber(1, 10);
+      var max = answer + generateNumber(1, 10);
+      var choice = updatedChoice || generateNumber(min, max);
       var choiceNotTaken = choices.every(function (takenChoice) {
         return choice !== takenChoice;
       });
