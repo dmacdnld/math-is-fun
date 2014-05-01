@@ -259,7 +259,7 @@ describe('Game', function () {
       var timeout;
 
       game.startRound(stub1, stub2);
-      var timeout = game.timeout;
+      timeout = game.timeout;
 
       game.end();
       timeout._idleTimeout.should.equal(-1);

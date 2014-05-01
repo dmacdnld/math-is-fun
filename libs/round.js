@@ -3,18 +3,8 @@ var Round = function () {
 
   var answer, correctChoice;
 
-  var getDecimalPlaces = function (number) {
-    var result = /^-?[0-9]+\.([0-9]+)$/.exec(number);
-    return result === null ? 0 : result[1].length;
-  };
-
   var setAnswer = function (newAnswer) {
-    if (getDecimalPlaces(newAnswer) > 2) {
-      answer = parseFloat(newAnswer.toFixed(2));
-    }
-    else {
-      answer = newAnswer;
-    }
+    answer = newAnswer;
   };
 
   var generateEquation = function () {
@@ -47,9 +37,8 @@ var Round = function () {
   };
 
   var generateChoices = function () {
-    var decimalPlaces = getDecimalPlaces(answer);
     var generateChoice = function (updatedChoice) {
-      var choice = updatedChoice || parseFloat((Math.random() * answer).toFixed(decimalPlaces));
+      var choice = updatedChoice || parseInt(Math.random() * answer, 10);
       var choiceNotTaken = choices.every(function (takenChoice) {
         return choice !== takenChoice;
       });
