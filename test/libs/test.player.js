@@ -23,6 +23,16 @@ describe('Player',function () {
     done();
   });
 
+  it('should create a guest name when instantiated with no name', function (done) {
+    var player = new Player(2, '', 0);
+    var expected = 'guest1';
+    var actual = player.name;
+
+    actual.should.equal.expected;
+
+    done();
+  });
+
   it('should have 0 points when instantiated', function (done) {
     player.points.should.equal(0);
     done();

@@ -174,6 +174,22 @@ describe('Game', function () {
       done();
     });
 
+    it('should increment the guests count when the player is a guest', function (done) {
+      var current = 0;
+      var expected = 1;
+      var actual;
+      var guest;
+
+      game.guestsCount = current;
+      guest = new Player(2, '', game.guestsCount);
+      game.addPlayer(guest);
+      actual = game.guestsCount;
+
+      actual.should.equal.expected;
+
+      done();
+    });
+
   });
 
   describe('#removePlayer()', function () {
