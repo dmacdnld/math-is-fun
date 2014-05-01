@@ -1,8 +1,9 @@
-module.exports = function (id, name) {
+module.exports = function (id, name, guestsCount) {
   "use strict";
 
   if (name === '') {
-    name = 'guest_' + id;
+    name = 'guest' + (guestsCount + 1);
+    this.isGuest = true;
   }
 
   this.id = id;

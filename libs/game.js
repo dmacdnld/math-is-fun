@@ -38,6 +38,7 @@ var Game = function () {
   };
 
   this.players = [];
+  this.guestsCount = 0;
 
   // Expose private variable for testing
   if (process.env.NODE_ENV === 'test') {
@@ -55,6 +56,7 @@ Game.prototype.hasPlayerOfName = function (name) {
 
 Game.prototype.addPlayer = function (player) {
   if (!(player instanceof Player)) return null;
+  if (player.isGuest) this.guestsCount++;
   return this.players.push(player);
 };
 

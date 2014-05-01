@@ -49,7 +49,7 @@ module.exports = function (server) {
         if (game.hasPlayerOfName(name)) {
           client.emit('player:invalid');
         } else {
-          game.addPlayer(new Player(client.id, name));
+          game.addPlayer(new Player(client.id, name, game.guestsCount));
 
           client.join('game');
           client.broadcast.to('game').emit('player:joined', game.players);
@@ -57,7 +57,7 @@ module.exports = function (server) {
         }
       } else {
         game = new Game();
-        game.addPlayer(new Player(client.id, name));
+        game.addPlayer(new Player(client.id, name, game.guestsCount));
 
         client.join('game');
         io.sockets.in('game').emit('player:joined', game.players);
