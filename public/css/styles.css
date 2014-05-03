@@ -68,24 +68,30 @@ small {
   transition: 0.075s linear all;
 }
 
+.btn:active {
+  box-shadow: none;
+  -webkit-transform: translateY(1px);
+  -ms-transform: translateY(1px);
+  transform: translateY(1px);
+}
+
 .btn,
-.btn:disabled:active {
+.btn--muted:active,
+.btn--correct:active,
+.btn--incorrect:active {
   box-shadow: 0 1px #332D2D;
   -webkit-transform: translateY(0);
   -ms-transform: translateY(0);
   transform: translateY(0);
 }
 
-.btn:hover,
-.btn:disabled {
-  background-color: #FFFDFD;
+.btn--muted {
+  color: #AAA6A6;
 }
 
-.btn:active {
-  box-shadow: none;
-  -webkit-transform: translateY(1px);
-  -ms-transform: translateY(1px);
-  transform: translateY(1px);
+.btn:hover,
+.btn--muted {
+  background-color: #FFFDFD;
 }
 
 .btn--primary {
@@ -97,15 +103,19 @@ small {
 }
 
 .btn--correct,
-.btn--correct:hover,
-.btn--correct:disabled {
+.btn--correct:hover {
   color: #332D2D;
   background-color: #5AC44E;
 }
 
 .btn--incorrect,
-.btn--incorrect:hover,
-.btn--incorrect:disabled {
+.btn--incorrect:hover {
   color: #332D2D;
   background-color: #CF7270;
+}
+
+.btn--correct,
+.btn--incorrect,
+.btn--muted {
+  cursor: default;
 }
