@@ -24,6 +24,55 @@ h2 {
   width: 24em;
 }
 
+.timer {
+  position: relative;
+  overflow-x: hidden;
+}
+
+.timer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: -1;
+  background-color: #CFEBFA;
+}
+
+.timer--start::before {
+  -webkit-animation: Timer 10s linear forwards;
+  animation: Timer 10s linear forwards;
+}
+
+.timer--stop::before {
+  -webkit-transform: translateX(0);
+  -ms-transform: translateX(0);
+  transform: translateX(0);
+}
+
+@-webkit-keyframes Timer {
+  from {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+  }
+  to {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes Timer {
+  from {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+  }
+  to {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+}
+
 label {
   display: inline-block;
   margin-bottom: 0.25em;
