@@ -16,15 +16,15 @@ describe('Round',function () {
 
     it('should have an equation', function (done) {
       var equation = trivia.equation;
-      var operator = find(['+', '-', '*', '/'], function(operator) {
+      var operator = _.find(['+', '-', '*', '/'], function(operator) {
         return equation.indexOf(operator) > 0;
       });
       var equationSplit = equation.split(operator);
       var operandA = equationSplit[0];
       var operandB = equationSplit[1];
 
-      isNumeric(operandA).should.be.true;
-      isNumeric(operandB).should.be.true;
+      _.isNumber(+operandA).should.be.true;
+      _.isNumber(+operandB).should.be.true;
       operator.should.exist;
 
       done();
@@ -32,8 +32,8 @@ describe('Round',function () {
 
     it('should have an array of 4 unique choices', function (done) {
       var choices = trivia.choices;
-      var uniqueChoices = uniq(choices);
-      var allChoicesNumeric = choices.every(isNumeric);
+      var uniqueChoices = _.uniq(choices);
+      var allChoicesNumeric = choices.every(_.isNumber);
 
       choices.should
         .be.an('array').and

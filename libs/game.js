@@ -1,8 +1,6 @@
 var Round = require('./round');
 var Player = require('./player');
-var find = require('lodash.find');
-var max = require('lodash.max');
-var invoke = require('lodash.invoke');
+var _ = require('lodash');
 
 var Game = function () {
   "use strict";
@@ -70,18 +68,21 @@ Game.prototype.removePlayer = function (player) {
 };
 
 Game.prototype.getPlayer = function (id) {
-  return find(this.players, function (player) {
+  return _.find(this.players, function (player) {
     return player.id === id;
   });
 };
 
 Game.prototype.getWinner = function () {
-  var winner = max(this.players, 'points');
-  return winner.points > 0 ? winner : null;
+  var mostPoints = _.max(_.pluck(this.players, 'points'));
+  if (mostPoints === 0) return null;
+
+  var winner = _.where(this.players, { points: mostPoints });
+  return winner;
 };
 
 Game.prototype.resetPoints = function () {
-  return invoke(this.players, 'resetPoints');
+  return _.invoke(this.players, 'resetPoints');
 };
 
 module.exports = Game;

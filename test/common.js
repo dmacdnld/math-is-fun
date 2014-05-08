@@ -16,8 +16,4 @@ global.socketOptions ={
 };
 
 
-global.find = require('lodash.find');
-global.uniq = require('lodash.uniq');
-global.isNumeric = function (number) {
-    return !isNaN(parseFloat(number)) && isFinite(number);
-};
+global._ = require('lodash');
