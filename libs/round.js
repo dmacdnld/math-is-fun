@@ -1,3 +1,6 @@
+var moment = require('moment');
+var gameConfig = require('./game-config');
+
 var Round = function () {
   "use strict";
 
@@ -79,6 +82,10 @@ var Round = function () {
     equation: generateEquation(),
     choices: generateChoices()
   };
+};
+
+Round.prototype.init = function () {
+  this.endTime = moment.utc().add('ms', gameConfig.roundDuration);
 };
 
 Round.prototype.hasPlayerAnswered = function (player) {

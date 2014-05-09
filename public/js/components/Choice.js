@@ -20,8 +20,7 @@ module.exports = React.createClass({
       className = 'btn--correct';
     } else if (this.props.incorrect) {
       className = 'btn--incorrect';
-    }
-    else if (this.props.roundOver) {
+    } else if (this.props.roundState === 'over') {
       className = 'btn--muted';
     }
 

@@ -1,6 +1,7 @@
 var Game = require('../../libs/game');
 var Round = require('../../libs/round');
 var Player = require('../../libs/player');
+var gameConfig = require('../../libs/game-config');
 
 describe('Game', function () {
 
@@ -8,6 +9,7 @@ describe('Game', function () {
     var game;
     var ROUNDS_LENGTH;
     var ROUND_DURATION;
+    var ROUND_DELAY;
     var intervalsLength;
     var sandbox;
     var stub1;
@@ -15,14 +17,16 @@ describe('Game', function () {
 
     beforeEach(function (done) {
       game = new Game();
-      ROUNDS_LENGTH = game.ROUNDS_LENGTH;
-      ROUND_DURATION = game.ROUND_DURATION;
+      ROUNDS_LENGTH = gameConfig.roundsLength;
+      ROUND_DURATION = gameConfig.roundDuration;
+      ROUND_DELAY = gameConfig.roundDelay;
       intervalsLength = ROUNDS_LENGTH + 1;
 
       sandbox = sinon.sandbox.create();
       sandbox.useFakeTimers(0, 'setTimeout');
       stub1 = sandbox.stub();
       stub2 = sandbox.stub();
+      stub3 = sandbox.stub();
 
       done();
     });
@@ -33,11 +37,11 @@ describe('Game', function () {
     });
 
     it('should call first callback on an interval as many times as there are game rounds', function (done) {
-      game.startRound(stub1, stub2);
+      game.startRound(stub1, stub2, stub3, true);
 
       for (var i = 0; i < intervalsLength; i++) {
         stub1.should.have.callCount(i);
-        sandbox.clock.tick(ROUND_DURATION);
+        sandbox.clock.tick(ROUND_DURATION + ROUND_DELAY);
         if (i < ROUNDS_LENGTH) {
           stub1.should.have.callCount(i + 1);
         }
@@ -49,13 +53,13 @@ describe('Game', function () {
     });
 
     it('should call the first callback immediately if told to and then call it on an interval until the total call count is the same as the number of game rounds', function (done) {
-      game.startRound(stub1, stub2, true);
+      game.startRound(stub1, stub2, stub3, true);
       sandbox.clock.tick(1);
       stub1.should.have.been.called;
 
       for (var i = 1; i < intervalsLength; i++) {
         stub1.should.have.callCount(i);
-        sandbox.clock.tick(ROUND_DURATION);
+        sandbox.clock.tick(ROUND_DURATION + ROUND_DELAY);
         if (i < ROUNDS_LENGTH) {
           stub1.should.have.callCount(i + 1);
         }
@@ -66,15 +70,33 @@ describe('Game', function () {
       done();
     });
 
+    it('should call second callback on an interval as many times as there are game rounds', function (done) {
+      game.startRound(stub1, stub2, stub3, true);
+      sandbox.clock.tick(1);
+
+      for (var i = 0; i < intervalsLength; i++) {
+        stub2.should.have.callCount(i);
+        sandbox.clock.tick(ROUND_DURATION);
+        if (i < ROUNDS_LENGTH) {
+          stub2.should.have.callCount(i + 1);
+        }
+        sandbox.clock.tick(ROUND_DELAY);
+      }
+
+      stub2.should.have.callCount(ROUNDS_LENGTH);
+
+      done();
+    });
+
     it('should store the current round as each round starts', function (done) {
       var lastRound = game.currentRound;
 
-      game.startRound(stub1, stub2);
+      game.startRound(stub1, stub2, stub3, true);
 
       should.equal(lastRound, undefined);
 
       for (var i = 0; i < intervalsLength; i++) {
-        sandbox.clock.tick(ROUND_DURATION);
+        sandbox.clock.tick(ROUND_DURATION + ROUND_DELAY);
         if (i < ROUNDS_LENGTH) {
           game.currentRound.should.be.an.instanceof(Round);
           game.currentRound.should.not.equal(lastRound);
@@ -85,15 +107,15 @@ describe('Game', function () {
       done();
     });
 
-    it('should call the second callback after the first callback call count is the same as the number of game rounds', function (done) {
-      game.startRound(stub1, stub2);
+    it('should call the third callback after the first callback call count is the same as the number of game rounds', function (done) {
+      game.startRound(stub1, stub2, stub3, true);
 
       for (var i = 0; i < intervalsLength; i++) {
-        stub2.should.not.have.been.called;
-        sandbox.clock.tick(ROUND_DURATION);
+        stub3.should.not.have.been.called;
+        sandbox.clock.tick(ROUND_DURATION + ROUND_DELAY);
       }
 
-      stub2.should.have.been.calledOnce;
+      stub3.should.have.been.calledOnce;
 
       done();
     });

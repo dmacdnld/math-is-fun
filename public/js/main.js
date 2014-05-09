@@ -2,10 +2,12 @@
 
 var React = require('react');
 var JoinForm = require('./components/JoinForm');
+var Message = require('./components/Message');
 var Round = require('./components/Round');
 var PlayerList = require('./components/PlayerList');
 var io = require('socket.io-client');
 var socket = io.connect(window.location.hostname);
+var moment = require('moment');
 
 var Main = React.createClass({
   componentWillMount: function () {
@@ -16,17 +18,27 @@ var Main = React.createClass({
         trivia: trivia,
         correctChoice: undefined,
         incorrectChoice: undefined,
-        roundOver: undefined,
-        winner: undefined
+        roundState: 'started',
+        waitingForNext: null,
+        winner: false
       });
     });
 
-    socket.on('player:joined', function (players, trivia) {
-      if (trivia) {
+    socket.on('player:joined', function (players, roundEndTime) {
+      if (roundEndTime) {
+        var timeUntilNextRound = moment.utc(roundEndTime).diff(moment.utc(), 's');
+
         that.setState({
           players: players,
-          trivia: trivia
+          roundState: 'started',
+          waitingForNext: 'round',
+          timeUntilNextRound: --timeUntilNextRound
         });
+        that.interval = setInterval(function () {
+          that.setState({ timeUntilNextRound: --timeUntilNextRound });
+
+          if (timeUntilNextRound === 0) clearInterval(that.interval);
+        }, 1000);
       } else {
         that.setState({ players: players });
       }
@@ -40,7 +52,7 @@ var Main = React.createClass({
       that.setState({
         players: players,
         correctChoice: answer,
-        roundOver: true
+        roundState: 'over'
       });
     });
 
@@ -48,21 +60,30 @@ var Main = React.createClass({
       that.setState({
         correctChoice: correctChoice,
         incorrectChoice: incorrectChoice,
-        roundOver: true
+        roundState: 'over'
+      });
+    });
+
+    socket.on('round:over', function (answer) {
+      that.setState({
+        correctChoice: answer,
+        roundState: 'over'
       });
     });
 
     socket.on('game:over', function (winner) {
-      var secondsCount = 10;
+      var timeUntilNextGame = 10;
 
       that.setState({
         winner: winner,
-        secondsCount: secondsCount--
+        timeUntilNextGame: timeUntilNextGame--,
+        waitingForNext: 'game',
+        roundState: null
       });
       that.interval = setInterval(function () {
-        that.setState({ secondsCount: secondsCount-- });
+        that.setState({ timeUntilNextGame: timeUntilNextGame-- });
 
-        if (secondsCount === 0) clearInterval(that.interval);
+        if (timeUntilNextGame === 0) clearInterval(that.interval);
       }, 1000);
     });
   },
@@ -74,31 +95,31 @@ var Main = React.createClass({
   render: function() {
     var winner = this.state.winner;
     var trivia = this.state.trivia;
-    var secondsCount = this.state.secondsCount;
-    var secondPluralization = secondsCount > 1 ? 'seconds' : 'second';
-    var countDownMessage = 'Next game in ' + secondsCount + ' ' + secondPluralization + '!';
-    var startingMessage = 'Next game starting...';
-    var message = secondsCount > 0 ? countDownMessage : startingMessage;
+    var roundState = this.state.roundState;
+    var waitingForNext = this.state.waitingForNext;
+    var timeUntilNextRound = this.state.timeUntilNextRound;
+    var timeUntilNextGame = this.state.timeUntilNextGame;
     var JsxToRender;
 
-    if (winner) {
+    if (waitingForNext) {
       JsxToRender = (
-        <div id='game'>
-          <h2>{ winner.name } wins with { winner.points } points!</h2>
-          <div>{ message }</div>
-        </div>
-      );
-    } else if (winner === null) {
-      JsxToRender = (
-        <div id='game'>
-          <h2>No winner this game :(</h2>
-          <div>{ message }</div>
-        </div>
+        <Message
+          winner={ winner }
+          roundState={ roundState }
+          waitingForNext={ waitingForNext }
+          timeUntilNextRound={ timeUntilNextRound }
+          timeUntilNextGame={ timeUntilNextGame }
+        />
       );
     } else if (trivia) {
       JsxToRender = (
         <div id='game'>
-          <Round trivia={ trivia } correctChoice={ this.state.correctChoice } incorrectChoice={ this.state.incorrectChoice } roundOver={ this.state.roundOver }/>
+          <Round
+            trivia={ trivia }
+            correctChoice={ this.state.correctChoice }
+            incorrectChoice={ this.state.incorrectChoice }
+            roundState={ this.state.roundState }
+          />
           <PlayerList players={ this.state.players } />
         </div>
       );

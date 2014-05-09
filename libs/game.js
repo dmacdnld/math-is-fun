@@ -1,49 +1,57 @@
 var Round = require('./round');
 var Player = require('./player');
+var gameConfig = require('./game-config');
 var _ = require('lodash');
 
 var Game = function () {
   "use strict";
 
-  var ROUNDS_LENGTH = 8;
-  var ROUND_DURATION = 10000;
-  var rounds = (function () {
-    var rounds = new Array(Math.max(0, ROUNDS_LENGTH));
-    for (var i = 0; i < ROUNDS_LENGTH; i++) rounds[i] = new Round();
-    return rounds;
-  })();
-
-  this.startRound = function (emitNewRound, emitGameEnd, startNow) {
-    var delay = startNow ? 1 : ROUND_DURATION;
-    var alreadyOver = this.over;
-
-    this.timeout = setTimeout(function (self) {
-      if (rounds.length) {
-        self.currentRound = rounds.pop();
-        emitNewRound(self.currentRound.trivia);
-        self.startRound(emitNewRound, emitGameEnd);
-      } else if (!alreadyOver) {
-        self.over = true;
-        emitGameEnd();
-      }
-    }, delay, this);
-  };
-
-  this.end = function () {
-    clearTimeout(this.timeout);
-    rounds.length = 0;
-    this.players.length = 0;
-  };
+  this.rounds = this.generateRounds();
 
   this.players = [];
-  this.guestsCount = 0;
 
-  // Expose private variable for testing
-  if (process.env.NODE_ENV === 'test') {
-    this.rounds = rounds;
-    this.ROUND_DURATION = ROUND_DURATION;
-    this.ROUNDS_LENGTH = ROUNDS_LENGTH;
-  }
+  this.guestsCount = 0;
+};
+
+Game.prototype.generateRounds = function () {
+  var rounds = new Array(Math.max(0, gameConfig.roundsLength));
+  for (var i = 0; i < gameConfig.roundsLength; i++) rounds[i] = new Round();
+  return rounds;
+};
+
+Game.prototype.startRound = function (emitNewRound, emitRoundEnd, emitGameEnd, startNow) {
+  var delay = startNow ? 1 : gameConfig.roundDuration;
+  var alreadyOver = this.over;
+  var nextRoundCallback = (function () {
+    this.currentRound = this.rounds.pop();
+    this.currentRound.init();
+    emitNewRound(this.currentRound.trivia, this.currentRound.endTime);
+    this.startRound(emitNewRound, emitRoundEnd, emitGameEnd);
+  }).bind(this);
+  var endGameCallback = (function () {
+    this.over = true;
+    emitGameEnd();
+  }).bind(this);
+
+  this.timeout = setTimeout(function (self) {
+    if (self.rounds.length) {
+      if (startNow) {
+        nextRoundCallback();
+      } else {
+        emitRoundEnd(self.currentRound.getAnswer());
+        setTimeout(nextRoundCallback, gameConfig.roundDelay);
+      }
+    } else if (!alreadyOver) {
+      emitRoundEnd(self.currentRound.getAnswer());
+      setTimeout(endGameCallback, gameConfig.roundDelay);
+    }
+  }, delay, this);
+};
+
+Game.prototype.end = function () {
+  clearTimeout(this.timeout);
+  this.rounds.length = 0;
+  this.players.length = 0;
 };
 
 Game.prototype.hasPlayerOfName = function (name) {

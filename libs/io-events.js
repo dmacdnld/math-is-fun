@@ -11,6 +11,9 @@ module.exports = function (server) {
   var emitNewRound = function (trivia) {
     io.sockets.in('game').emit('round:started', trivia);
   };
+  var emitRoundEnd = function (answer) {
+    io.sockets.in('game').emit('round:over', answer);
+  };
   var emitGameEnd = function () {
     io.sockets.in('game').emit('game:over', game.getWinner());
 
@@ -21,7 +24,7 @@ module.exports = function (server) {
 
     setTimeout(function () {
       io.sockets.in('game').emit('player:joined', game.players);
-      game.startRound(emitNewRound, emitGameEnd, true);
+      game.startRound(emitNewRound, emitRoundEnd, emitGameEnd, true);
     }, 10000);
   };
 
@@ -53,7 +56,7 @@ module.exports = function (server) {
 
           client.join('game');
           client.broadcast.to('game').emit('player:joined', game.players);
-          client.emit('player:joined', game.players, game.currentRound.trivia);
+          client.emit('player:joined', game.players, game.currentRound.endTime);
         }
       } else {
         game = new Game();
@@ -62,7 +65,7 @@ module.exports = function (server) {
         client.join('game');
         io.sockets.in('game').emit('player:joined', game.players);
 
-        game.startRound(emitNewRound, emitGameEnd, true);
+        game.startRound(emitNewRound, emitRoundEnd, emitGameEnd, true);
       }
     });
 
@@ -91,8 +94,8 @@ module.exports = function (server) {
       if (choiceIsCorrect || allPlayersAnswered) {
         clearTimeout(game.timeout);
         setTimeout(function () {
-          game.startRound(emitNewRound, emitGameEnd, true);
-        }, 5000);
+          game.startRound(emitNewRound, emitRoundEnd, emitGameEnd, true);
+        }, 2500);
       }
     });
 
