@@ -18,7 +18,6 @@ module.exports = React.createClass({
     return (
       <div id='round'>
         <h2 className={ 'timer ' + timerClassName }>{ this.props.trivia.equation }</h2>
-        <div id='result' />
         { this.props.trivia.choices.map(function (choice) {
           return (
             <Choice
