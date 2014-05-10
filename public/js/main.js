@@ -120,7 +120,10 @@ var Main = React.createClass({
             incorrectChoice={ this.state.incorrectChoice }
             roundState={ this.state.roundState }
           />
-          <PlayerList players={ this.state.players } />
+          <div id='player-section'>
+            <h2>Players</h2>
+            <PlayerList players={ this.state.players } />
+          </div>
         </div>
       );
     } else {

@@ -7,7 +7,7 @@ module.exports = React.createClass({
     var player = this.props.player;
 
     return (
-      <li>{ player.name }, { player.points }</li>
+      <li className='player'>{ player.name } <span className='player__points'>{ player.points }</span></li>
     );
   }
 });
