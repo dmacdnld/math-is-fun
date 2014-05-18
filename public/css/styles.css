@@ -216,3 +216,28 @@ small {
 .player__points {
   float: right;
 }
+
+@media all and (max-width: 1080px) {
+  #player-section {
+    position: relative;
+    width: initial;
+    margin-top: 2.5em;
+    border-top: 1px dashed #332D2D;
+    border-left: none;
+    text-align: center;
+  }
+
+  #player-list {
+    display: inline-block;
+    width: 24em;
+    text-align: left;
+  }
+
+  .player {
+    padding: 0.5em 0;
+  }
+
+  .player__points {
+    float: right;
+  }
+}
