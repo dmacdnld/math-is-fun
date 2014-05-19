@@ -1,9 +1,9 @@
 module.exports = {
   start: function (fn, timeout) {
-    this.timeoutId = setTimeout(fn, timeout);
+    this.timeoutObj = setTimeout(fn, timeout);
   },
 
   stop: function () {
-    clearTimeout(this.timeoutId);
+    clearTimeout(this.timeoutObj);
   }
 };
