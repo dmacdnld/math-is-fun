@@ -121,6 +121,12 @@ small {
   font-style: italic;
 }
 
+#invalidNameMessage {
+  display: block;
+  margin-bottom: 0.25em;
+  color: #CF7270;
+}
+
 .btn {
   display: inline-block;
   height: 3em;

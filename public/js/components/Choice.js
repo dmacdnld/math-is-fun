@@ -13,21 +13,25 @@ module.exports = React.createClass({
   },
 
   render: function () {
-    var choice = this.props.choice;
+    var value = this.props.value;
+    var correctChoice = this.props.correctChoice;
+    var incorrectChoice = this.props.incorrectChoice;
+    var roundEndTime = this.props.roundEndTime;
+    var currentTime = this.props.currentTime;
     var className = '';
 
-    if (this.props.correct) {
+    if (value === correctChoice) {
       className = 'btn--correct';
-    } else if (this.props.incorrect) {
+    } else if (value === incorrectChoice) {
       className = 'btn--incorrect';
-    } else if (this.props.roundState === 'over') {
+    } else if (currentTime.isSame(roundEndTime)) {
       className = 'btn--muted';
     }
 
     return (
       <form onSubmit={ this.submitChoice }>
-        <input type='hidden' value={ choice } />
-        <button type='submit' className={ 'btn ' + className }>{ choice }</button>
+        <input type='hidden' value={ value } />
+        <button type='submit' className={ 'btn ' + className }>{ value }</button>
       </form>
     );
   }

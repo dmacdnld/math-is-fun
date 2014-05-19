@@ -10,19 +10,12 @@ var moment = require('moment');
 var _ = require('lodash');
 
 module.exports = React.createClass({
-  getNextRoundMessage: function () {
-    return this.getNextMessage(this.props.timeUntilNextRound, 'round');
-  },
-
   getNextGameMessage: function () {
-    return this.getNextMessage(this.props.timeUntilNextGame, 'game');
-  },
-
-  getNextMessage: function (timeUntilNext, type) {
-    var secondPluralization = timeUntilNext > 1 ? 'seconds' : 'second';
-    var countDownMessage = 'Join the next ' + type + ' in ' + timeUntilNext + ' ' + secondPluralization + '!';
-    var startingMessage = 'Next ' + type + ' starting...';
-    return timeUntilNext > 0 ? countDownMessage : startingMessage;
+    var timeUntilNextGame = this.props.timeUntilNextGame;
+    var secondPluralization = timeUntilNextGame > 1 ? 'seconds' : 'second';
+    var countDownMessage = 'Join the next game in ' + timeUntilNextGame + ' ' + secondPluralization + '!';
+    var startingMessage = 'Next game starting...';
+    return timeUntilNextGame > 0 ? countDownMessage : startingMessage;
   },
 
   getWinningMessage: function (winner) {
@@ -45,26 +38,12 @@ module.exports = React.createClass({
 
   render: function() {
     var winner = this.props.winner;
-    var roundState = this.props.roundState;
-    var waitingForNext = this.props.waitingForNext;
-    var nextMessage;
-
-    if (waitingForNext === 'round') {
-      nextMessage = this.getNextRoundMessage();
-      return (
-        <div id='game'>
-          <h2>Game in progress</h2>
-          <div>{ nextMessage }</div>
-        </div>
-      );
-    }
-
-    nextMessage = this.getNextGameMessage();
+    var nextGameMessage = this.getNextGameMessage();
     winningMessage = this.getWinningMessage(winner);
     return (
       <div id='game'>
         <h2>{ winningMessage }</h2>
-        <div>{ nextMessage }</div>
+        <div>{ nextGameMessage }</div>
       </div>
     );
   }

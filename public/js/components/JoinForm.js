@@ -8,13 +8,13 @@ module.exports = React.createClass({
   componentWillMount: function () {
     var that = this;
 
-    socket.on('player:invalid', function () {
-      that.setState({ invalidReason: 'taken' });
+    socket.on('player:rejected', function () {
+      that.setState({ rejected: true });
     });
   },
 
   getInitialState: function () {
-    return { invalidReason: null };
+    return { rejected: false };
   },
 
   submitForm: function (event) {
@@ -26,22 +26,29 @@ module.exports = React.createClass({
   },
 
   render: function () {
-    var invalidReason = this.state.invalidReason;
-    var errorMessages = {
-      taken: "Sorry, that name is taken",
-      missing: "Sorry, we need a name"
-    };
-    var errorMessage = errorMessages[invalidReason];
-    var errorClass = invalidReason ? 'error' : 'hidden';
+    var rejected = this.state.rejected;
+    var jsxToRender;
 
-    return (
-      <form id="join-form" onSubmit={this.submitForm}>
-        <label htmlFor='name'>Choose a name</label>
-        <input id='name' type='text' placeholder='e.g. Mathlete' ref='name' autofocus/>
-        <div className={ errorClass }>{ errorMessage }</div>
-        <small>or join as a guest</small>
-        <button className='btn btn--primary' type='submit'>Start playing!</button>
-      </form>
-    );
+    if (rejected) {
+      jsxToRender = (
+        <form id="join-form" onSubmit={ this.submitForm }>
+          <label htmlFor='name'>Choose a name</label>
+          <small id="invalidNameMessage">That name is taken. Choose another.</small>
+          <input id='name' type='text' placeholder='e.g. Mathlete' ref='name' autofocus/>
+          <small>or join as a guest</small>
+          <button className='btn btn--primary' type='submit'>Start playing!</button>
+        </form>
+      )
+    } else {
+      jsxToRender = (
+        <form id="join-form" onSubmit={ this.submitForm }>
+          <label htmlFor='name'>Choose a name</label>
+          <input id='name' type='text' placeholder='e.g. Mathlete' ref='name' autofocus/>
+          <small>or join as a guest</small>
+          <button className='btn btn--primary' type='submit'>Start playing!</button>
+        </form>
+      );
+    }
+    return jsxToRender;
   }
 });

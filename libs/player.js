@@ -1,3 +1,5 @@
+var ROUND_POINTS = require('./game-config').roundPoints;
+
 module.exports = function (id, name, guestsCount) {
   "use strict";
 
@@ -9,10 +11,9 @@ module.exports = function (id, name, guestsCount) {
   this.id = id;
   this.name = name;
   this.points = 0;
-  this.ROUND_POINTS = 10;
 
   this.addPoints = function () {
-    return this.points += this.ROUND_POINTS;
+    return this.points += ROUND_POINTS;
   };
 
   this.resetPoints = function () {

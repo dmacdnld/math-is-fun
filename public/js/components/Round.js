@@ -5,26 +5,30 @@ var Choice = require('./Choice');
 
 module.exports = React.createClass({
   render: function () {
-    var that = this;
-    var timerClassName = '';
-    var roundState = this.props.roundState;
+    var trivia = this.props.trivia;
+    var roundEndTime = this.props.roundEndTime;
+    var currentTime = this.props.currentTime;
+    var correctChoice = this.props.correctChoice;
+    var incorrectChoice = this.props.incorrectChoice;
+    var timerClassName;
 
-    if (roundState === 'started') {
+    if (currentTime.isBefore(roundEndTime)) {
       timerClassName = 'timer--start';
-    } else if (roundState === 'over') {
+    } else {
       timerClassName = 'timer--stop';
     }
 
     return (
       <div id='round'>
-        <h2 className={ 'timer ' + timerClassName }>{ this.props.trivia.equation }</h2>
-        { this.props.trivia.choices.map(function (choice) {
+        <h2 className={ 'timer ' + timerClassName }>{ trivia.equation }</h2>
+        { trivia.choices.map(function (value) {
           return (
             <Choice
-              choice={ choice }
-              correct={ choice === that.props.correctChoice }
-              incorrect={ choice === that.props.incorrectChoice }
-              roundState={ roundState }
+              value={ value }
+              correctChoice={ correctChoice }
+              incorrectChoice={ incorrectChoice }
+              roundEndTime={ roundEndTime }
+              currentTime={ currentTime }
             />
           );
         })}

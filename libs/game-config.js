@@ -1,5 +1,7 @@
 module.exports = {
-  roundsLength: 3,
+  roundsLength: 8,
   roundDuration: 10000,
-  roundDelay: 2500
+  nextRoundDelay: 2500,
+  nextGameDelay: 5000,
+  roundPoints: 10
 };

@@ -84,7 +84,7 @@ var Round = function () {
   };
 };
 
-Round.prototype.init = function () {
+Round.prototype.start = function () {
   this.endTime = moment.utc().add('ms', gameConfig.roundDuration);
 };
 

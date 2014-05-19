@@ -13,72 +13,63 @@ var Main = React.createClass({
   componentWillMount: function () {
     var that = this;
 
-    socket.on('round:started', function (trivia) {
-      that.setState({
-        trivia: trivia,
-        correctChoice: undefined,
-        incorrectChoice: undefined,
-        roundState: 'started',
-        waitingForNext: null,
-        winner: false
-      });
-    });
-
-    socket.on('player:joined', function (players, roundEndTime) {
-      if (roundEndTime) {
-        var timeUntilNextRound = moment.utc(roundEndTime).diff(moment.utc(), 's');
-
+    socket.on('player:joined', function (players, trivia, roundEndTime) {
+      if (arguments.length > 1) {
         that.setState({
           players: players,
-          roundState: 'started',
-          waitingForNext: 'round',
-          timeUntilNextRound: --timeUntilNextRound
+          trivia: trivia,
+          roundEndTime: roundEndTime,
+          currentTime: moment.utc()
         });
-        that.interval = setInterval(function () {
-          that.setState({ timeUntilNextRound: --timeUntilNextRound });
-
-          if (timeUntilNextRound === 0) clearInterval(that.interval);
-        }, 1000);
       } else {
         that.setState({ players: players });
       }
+    });
+
+    socket.on('round:started', function (players, trivia, roundEndTime) {
+      that.setState({
+        players: players,
+        trivia: trivia,
+        correctChoice: undefined,
+        incorrectChoice: undefined,
+        roundEndTime: roundEndTime,
+        currentTime: moment.utc(),
+        winner: false
+      });
     });
 
     socket.on('player:left', function (players) {
       that.setState({ players: players });
     });
 
-    socket.on('round:answered', function (players, answer) {
-      that.setState({
-        players: players,
-        correctChoice: answer,
-        roundState: 'over'
-      });
-    });
+    socket.on('choice:rejected', function (correctChoice, incorrectChoice) {
+      var roundEndTime = moment.utc();
 
-    socket.on('choice:incorrect', function (correctChoice, incorrectChoice) {
       that.setState({
         correctChoice: correctChoice,
         incorrectChoice: incorrectChoice,
-        roundState: 'over'
+        roundEndTime: roundEndTime,
+        currentTime: roundEndTime
       });
     });
 
-    socket.on('round:over', function (answer) {
+    socket.on('round:ended', function (players, answer) {
+      var roundEndTime = moment.utc();
       that.setState({
+        players: players,
         correctChoice: answer,
-        roundState: 'over'
+        roundEndTime: roundEndTime,
+        currentTime: roundEndTime
       });
     });
 
-    socket.on('game:over', function (winner) {
-      var timeUntilNextGame = 10;
+    socket.on('game:ended', function (winner) {
+      var timeUntilNextGame = 5;
 
       that.setState({
         winner: winner,
         timeUntilNextGame: timeUntilNextGame--,
-        waitingForNext: 'game',
-        roundState: null
+        roundEndTime: null
       });
       that.interval = setInterval(function () {
         that.setState({ timeUntilNextGame: timeUntilNextGame-- });
@@ -95,19 +86,18 @@ var Main = React.createClass({
   render: function() {
     var winner = this.state.winner;
     var trivia = this.state.trivia;
-    var roundState = this.state.roundState;
-    var waitingForNext = this.state.waitingForNext;
-    var timeUntilNextRound = this.state.timeUntilNextRound;
+    var correctChoice = this.state.correctChoice;
+    var incorrectChoice = this.state.incorrectChoice;
+    var roundEndTime = this.state.roundEndTime;
+    var currentTime = this.state.currentTime;
     var timeUntilNextGame = this.state.timeUntilNextGame;
+    var players = this.state.players;
     var JsxToRender;
 
-    if (waitingForNext) {
+    if (winner) {
       JsxToRender = (
         <Message
           winner={ winner }
-          roundState={ roundState }
-          waitingForNext={ waitingForNext }
-          timeUntilNextRound={ timeUntilNextRound }
           timeUntilNextGame={ timeUntilNextGame }
         />
       );
@@ -116,13 +106,14 @@ var Main = React.createClass({
         <div id='game'>
           <Round
             trivia={ trivia }
-            correctChoice={ this.state.correctChoice }
-            incorrectChoice={ this.state.incorrectChoice }
-            roundState={ this.state.roundState }
+            correctChoice={ correctChoice }
+            incorrectChoice={ incorrectChoice }
+            roundEndTime={ roundEndTime }
+            currentTime={ currentTime }
           />
           <div id='player-section'>
             <h2>Players</h2>
-            <PlayerList players={ this.state.players } />
+            <PlayerList players={ players } />
           </div>
         </div>
       );
