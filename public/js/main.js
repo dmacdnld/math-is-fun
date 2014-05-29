@@ -6,7 +6,7 @@ var Message = require('./components/Message');
 var Round = require('./components/Round');
 var PlayerList = require('./components/PlayerList');
 var io = require('socket.io-client');
-var socket = io.connect(window.location.hostname);
+var socket = io(window.location.hostname);
 var moment = require('moment');
 
 var Main = React.createClass({
