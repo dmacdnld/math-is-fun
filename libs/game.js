@@ -150,6 +150,7 @@ Game.prototype.handleChoiceSubmission = function (socket, choice) {
   if (choiceIsCorrect) {
     player.addPoints();
     this.endRound();
+    return;
   } else {
     socket.emit('choice:rejected', this.currentRound.getAnswer(), choice);
   }
