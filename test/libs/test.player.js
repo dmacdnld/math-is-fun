@@ -38,10 +38,10 @@ describe('Player',function () {
     done();
   });
 
-  describe('#addPoints', function () {
+  describe('#addPoints()', function () {
 
     it('should add points', function (done) {
-      var expected = player.points + player.ROUND_POINTS;
+      var expected = player.points + gameConfig.roundPoints;
       var actual = player.addPoints();
 
       actual.should.equal(expected);
@@ -51,7 +51,7 @@ describe('Player',function () {
 
   });
 
-  describe('#resetPoints', function () {
+  describe('#resetPoints()', function () {
 
     it('should reset points', function (done) {
       var expected = 0;

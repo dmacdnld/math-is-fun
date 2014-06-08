@@ -7,6 +7,7 @@ describe('timer',function () {
   beforeEach(function (done) {
     clock = sinon.useFakeTimers();
     stub = sinon.stub();
+    delete timer.timeoutObj;
     done();
   });
 
@@ -18,8 +19,6 @@ describe('timer',function () {
   describe('#start()', function () {
 
     it('should set timer#timeoutObj with the timeout object', function (done) {
-      should.equal(timer.timeoutObj, undefined);
-
       timer.start(stub, 1);
       clock.tick(1);
 
@@ -40,7 +39,7 @@ describe('timer',function () {
 
   });
 
-  describe('#stop', function () {
+  describe('#stop()', function () {
 
     it('should execute `global#clearTimeout` with timer#timeoutObj', function (done) {
       var spy = sinon.spy(global, 'clearTimeout');
