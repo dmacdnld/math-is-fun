@@ -1,9 +1,7 @@
 var ROUND_POINTS = require('./game-config').roundPoints;
 
 module.exports = function (id, name, guestsCount) {
-  "use strict";
-
-  if (name === '') {
+  if (!name) {
     name = 'guest' + (guestsCount + 1);
     this.isGuest = true;
   }

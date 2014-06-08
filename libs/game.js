@@ -23,13 +23,9 @@ Game.prototype.init = function () {
 };
 
 Game.prototype.handleConnection = function (socket) {
-  var handlePlayerRemoval = this.handlePlayerRemoval.bind(this, socket);
-  var handlePlayerApplication = this.handlePlayerApplication.bind(this, socket);
-  var handleChoiceSubmission = this.handleChoiceSubmission.bind(this, socket);
-
-  socket.on('disconnect', handlePlayerRemoval);
-  socket.on('player:applied', handlePlayerApplication);
-  socket.on('choice:submitted', handleChoiceSubmission);
+  socket.on('disconnect', this.handlePlayerRemoval.bind(this, socket));
+  socket.on('player:applied', this.handlePlayerApplication.bind(this, socket));
+  socket.on('choice:submitted', this.handleChoiceSubmission.bind(this, socket));
 };
 
 Game.prototype.generateRounds = function () {
@@ -45,7 +41,7 @@ Game.prototype.start = function () {
 Game.prototype.startRound = function () {
   this.currentRound = this.rounds.pop();
   this.currentRound.start();
-  this.io.sockets.in('game').emit('round:started', this.players, this.currentRound.trivia, this.currentRound.endTime);
+  this.io.in('game').emit('round:started', this.players, this.currentRound.trivia, this.currentRound.endTime);
   this.timer.start(this.endRound.bind(this), ROUND_DURATION);
 };
 
@@ -53,13 +49,13 @@ Game.prototype.endRound = function () {
   var callback = this.rounds.length ? this.startRound : this.end;
 
   this.timer.stop();
-  this.io.sockets.in('game').emit('round:ended', this.players, this.currentRound.getAnswer());
+  this.io.in('game').emit('round:ended', this.players, this.currentRound.getAnswer());
   this.timer.start(callback.bind(this), NEXT_ROUND_DELAY);
 };
 
 Game.prototype.end = function () {
   this.timer.stop();
-  this.io.sockets.in('game').emit('game:ended', this.getWinner());
+  this.io.in('game').emit('game:ended', this.getWinner());
   this.restart();
 };
 
@@ -104,7 +100,7 @@ Game.prototype.handlePlayerRemoval = function (socket) {
 
   this.removePlayer(player);
   if (this.players.length) {
-    this.io.sockets.in('game').emit('player:left', this.players);
+    this.io.in('game').emit('player:left', this.players);
   } else {
     this.end();
   }
