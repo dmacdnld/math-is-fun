@@ -3,4 +3,4 @@
 math-trivia
 ===========
 
-A simple, real-time, Node application using Express, Socket.io, and React.
+A simple, real-time Node application using Express, Socket.io, and React.
