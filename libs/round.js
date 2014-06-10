@@ -2,8 +2,6 @@ var moment = require('moment');
 var gameConfig = require('./game-config');
 
 var Round = function () {
-  "use strict";
-
   var answer, correctChoice;
 
   var setAnswer = function (newAnswer) {
