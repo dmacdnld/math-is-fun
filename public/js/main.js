@@ -18,7 +18,7 @@ var Main = React.createClass({
         that.setState({
           players: players,
           trivia: trivia,
-          roundEndTime: roundEndTime,
+          roundEndTime: moment.utc(roundEndTime),
           currentTime: moment.utc()
         });
       } else {
@@ -32,7 +32,7 @@ var Main = React.createClass({
         trivia: trivia,
         correctChoice: undefined,
         incorrectChoice: undefined,
-        roundEndTime: roundEndTime,
+        roundEndTime: moment.utc(roundEndTime),
         currentTime: moment.utc(),
         winner: false
       });
