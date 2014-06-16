@@ -8,25 +8,27 @@ var ROUND_DURATION = gameConfig.roundDuration;
 
 module.exports = React.createClass({
   componentDidMount: function () {
-    var currentTime = this.props.currentTime;
-    var roundEndTime = this.props.roundEndTime;
-    var timeDiff = roundEndTime.diff(currentTime);
+    var timeLeft = this.props.timeLeft;
 
-    if (timeDiff < (ROUND_DURATION - 120)) {
-      this.addTimerStyle(timeDiff);
+    if (timeLeft) {
+      this.addTimerStyle(timeLeft);
     }
   },
 
-  componentWillUpdate: function () {
+  componentWillReceiveProps: function (nextProps) {
     this.deleteTimerStyle();
+
+    if (nextProps.timeLeft) {
+      this.addTimerStyle(nextProps.timeLeft);
+    }
   },
 
-  addTimerStyle: function (timeDiff) {
-    var startingPoint = ((timeDiff / ROUND_DURATION) * 100).toFixed(2);
-    var animationName = 'Timer--' + timeDiff;
+  addTimerStyle: function (timeLeft) {
+    var startingPoint = ((timeLeft / ROUND_DURATION) * 100).toFixed(2);
+    var animationName = 'Timer--' + timeLeft;
     var animation = '#equation::before { ' +
-      'animation: '+ animationName + ' ' + timeDiff + 'ms linear forwards; ' +
-      '-webkit-animation: ' + animationName + ' ' + timeDiff + 'ms linear forwards; ' +
+      'animation: '+ animationName + ' ' + timeLeft + 'ms linear forwards; ' +
+      '-webkit-animation: ' + animationName + ' ' + timeLeft + 'ms linear forwards; ' +
     '}';
     var keyframes = 'from { ' +
       '-webkit-transform: translateX(-' + startingPoint + '%); ' +
@@ -61,15 +63,12 @@ module.exports = React.createClass({
 
   render: function () {
     var trivia = this.props.trivia;
-    var roundEndTime = this.props.roundEndTime;
-    var currentTime = this.props.currentTime;
+    var timeLeft = this.props.timeLeft;
     var correctChoice = this.props.correctChoice;
     var incorrectChoice = this.props.incorrectChoice;
     var timerClassName = '';
 
-    if (roundEndTime && roundEndTime.diff(currentTime) >= (ROUND_DURATION - 120)) {
-      timerClassName = 'timer--start';
-    } else if (currentTime.isSame(roundEndTime) || currentTime.isAfter(roundEndTime)) {
+    if (timeLeft === 0) {
       timerClassName = 'timer--stop';
     }
 
@@ -82,8 +81,7 @@ module.exports = React.createClass({
               value={ value }
               correctChoice={ correctChoice }
               incorrectChoice={ incorrectChoice }
-              roundEndTime={ roundEndTime }
-              currentTime={ currentTime }
+              timeLeft={ timeLeft }
             />
           );
         })}

@@ -138,12 +138,16 @@ describe('Game', function () {
     });
 
     it('should emit a \'round:started\' event to the \'game\' room', function () {
-      var stub = sinon.stub(game.io.in('game'), 'emit');
+      var stub1 = sinon.stub(game.io.in('game'), 'emit');
+      var stub2 = sinon.stub(Date, 'now');
+      var now = 1;
 
+      stub2.returns(now);
       game.startRound();
 
-      stub.should.have.been.calledWithExactly('round:started', game.players, game.currentRound.trivia, game.currentRound.endTime);
-      stub.restore();
+      stub1.should.have.been.calledWithExactly('round:started', game.players, game.currentRound.trivia, game.currentRound.endTime - now);
+      stub1.restore();
+      stub2.restore();
     });
 
     it('should start the timer to call #endRound()', function () {
@@ -400,8 +404,12 @@ describe('Game', function () {
       it('should emit a \'player:joined\' event', function () {
         var players = [];
         var trivia = {};
-        var endTime = '12:00:00';
-        var spy = sinon.stub(socket, 'emit');
+        var endTime = 2222222222222;
+        var stub1 = sinon.stub(socket, 'emit');
+        var stub2 = sinon.stub(Date, 'now');
+        var now = 1111111111111;
+        var timeLeft = endTime - now;
+        stub2.returns(now);
         game.players = players;
         game.currentRound = {
           trivia: trivia,
@@ -410,23 +418,24 @@ describe('Game', function () {
 
         game.handlePlayerApplication(socket);
 
-        spy.should.have.been.calledWithExactly('player:joined', players, trivia, endTime);
-        spy.restore();
+        stub1.should.have.been.calledWithExactly('player:joined', players, trivia, timeLeft);
+        stub1.restore();
+        stub2.restore();
       });
 
       it('should broadcast a \'player:joined\' event to the \'game\' room', function () {
         var players = [];
         var toValue = { emit: function () {} };
-        var stub = sinon.stub(socket.broadcast, 'to');
-        var spy = sinon.spy(toValue, 'emit');
-        stub.returns(toValue);
+        var stub1 = sinon.stub(socket.broadcast, 'to');
+        var stub2 = sinon.stub(toValue, 'emit');
+        stub1.returns(toValue);
         game.players = players;
 
         game.handlePlayerApplication(socket);
 
-        spy.should.have.been.calledWithExactly('player:joined', players);
-        stub.restore();
-        spy.restore();
+        stub2.should.have.been.calledWithExactly('player:joined', players);
+        stub1.restore();
+        stub2.restore();
       });
 
     });

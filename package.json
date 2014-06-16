@@ -13,7 +13,6 @@
     "socket.io": "^1.0.2",
     "express": "^4.3.1",
     "react": "^0.10.0",
-    "moment": "^2.6.0",
     "lodash": "^2.4.1"
   },
   "devDependencies": {
@@ -29,6 +28,7 @@
     "uglify-js": "^2.4.13"
   },
   "scripts": {
+    "predeploy": "echo PRE DEPLOY && browserify -t reactify -t envify public/js/main.js | uglifyjs --screw-ie8 -mc warnings=false > public/js/build/bundle.js",
     "start": "node app.js",
     "start-dev": "forever --exitcrash -o logs/out.log -e logs/err.log start -c nodemon app.js",
     "build": "NODE_ENV=production browserify -t reactify -t envify public/js/main.js | uglifyjs --screw-ie8 -mc warnings=false > public/js/build/bundle.js",

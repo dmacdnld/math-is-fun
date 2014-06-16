@@ -1,5 +1,5 @@
-var moment = require('moment');
 var gameConfig = require('./game-config');
+var ROUND_DURATION = gameConfig.roundDuration;
 
 var Round = function () {
   var answer, correctChoice;
@@ -83,7 +83,7 @@ var Round = function () {
 };
 
 Round.prototype.start = function () {
-  this.endTime = moment.utc().add('ms', gameConfig.roundDuration);
+  this.endTime = Date.now() + ROUND_DURATION;
 };
 
 Round.prototype.hasPlayerAnswered = function (player) {

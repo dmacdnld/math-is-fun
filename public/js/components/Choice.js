@@ -16,15 +16,14 @@ module.exports = React.createClass({
     var value = this.props.value;
     var correctChoice = this.props.correctChoice;
     var incorrectChoice = this.props.incorrectChoice;
-    var roundEndTime = this.props.roundEndTime;
-    var currentTime = this.props.currentTime;
+    var timeLeft = this.props.timeLeft;
     var className = '';
 
     if (value === correctChoice) {
       className = 'btn--correct';
     } else if (value === incorrectChoice) {
       className = 'btn--incorrect';
-    } else if (currentTime.isSame(roundEndTime)) {
+    } else if (timeLeft === 0) {
       className = 'btn--muted';
     }
 

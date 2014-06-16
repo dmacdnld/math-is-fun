@@ -63,11 +63,6 @@ h2 {
   background-color: #CFEBFA;
 }
 
-.timer--start::before {
-  -webkit-animation: Timer 10s linear forwards;
-  animation: Timer 10s linear forwards;
-}
-
 .timer--stop::before {
   -webkit-transform: translateX(0);
   transform: translateX(0);

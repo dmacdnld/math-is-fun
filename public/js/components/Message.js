@@ -6,7 +6,6 @@ var Round = require('./Round');
 var PlayerList = require('./PlayerList');
 var io = require('socket.io-client');
 var socket = io.connect(window.location.hostname);
-var moment = require('moment');
 var _ = require('lodash');
 
 module.exports = React.createClass({

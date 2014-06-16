@@ -41,7 +41,8 @@ Game.prototype.start = function () {
 Game.prototype.startRound = function () {
   this.currentRound = this.rounds.pop();
   this.currentRound.start();
-  this.io.in('game').emit('round:started', this.players, this.currentRound.trivia, this.currentRound.endTime);
+  var timeLeft = this.currentRound.endTime - Date.now();
+  this.io.in('game').emit('round:started', this.players, this.currentRound.trivia, timeLeft);
   this.timer.start(this.endRound.bind(this), ROUND_DURATION);
 };
 
@@ -81,8 +82,9 @@ Game.prototype.handlePlayerApplication = function (socket, name) {
 
     if (!this.currentRound) this.start();
 
+    var timeLeft = this.currentRound.endTime - Date.now();
     socket.join('game');
-    socket.emit('player:joined', this.players, this.currentRound.trivia, this.currentRound.endTime);
+    socket.emit('player:joined', this.players, this.currentRound.trivia, timeLeft);
     socket.broadcast.to('game').emit('player:joined', this.players);
   }
 };
@@ -102,6 +104,7 @@ Game.prototype.handlePlayerRemoval = function (socket) {
   if (this.players.length) {
     this.io.in('game').emit('player:left', this.players);
   } else {
+    this.guestsCount = 0;
     this.end();
   }
 };
