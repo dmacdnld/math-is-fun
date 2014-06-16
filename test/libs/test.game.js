@@ -115,21 +115,52 @@ describe('Game', function () {
 
   });
 
+  describe('#start()', function () {
+
+    it('should set #rounds', function () {
+      var stub1 = sinon.stub(game, 'generateRounds');
+      var stub2 = sinon.stub(game, 'startRound');
+      var rounds = [];
+      stub1.returns(rounds);
+
+      game.start();
+
+      game.rounds.should.equal(rounds);
+      stub1.restore();
+      stub2.restore();
+    });
+
+    it('should call #startRound()', function () {
+      var stub = sinon.stub(game, 'startRound');
+
+      game.start();
+
+      stub.should.have.been.called;
+    });
+
+  });
+
   describe('#startRound()', function () {
+    var roundA, roundB, rounds;
+
+    beforeEach(function () {
+      roundA = { start: function () {} };
+      roundB = { start: function () {} };
+      rounds = [roundA, roundB];
+      game.rounds = rounds;
+    });
 
     it('should assign the current round', function () {
-      var expected = _.last(game.rounds);
+      var expected = roundB;
 
       game.startRound();
 
       var actual = game.currentRound;
-
       actual.should.equal(expected);
     });
 
     it('should call currentRound#start()', function () {
-      var currentRound = _.last(game.rounds);
-      var stub = sinon.stub(currentRound, 'start');
+      var stub = sinon.stub(roundB, 'start');
 
       game.startRound();
 
@@ -204,6 +235,7 @@ describe('Game', function () {
       var NEXT_ROUND_DELAY = gameConfig.nextRoundDelay;
       var clock = sinon.useFakeTimers();
 
+      game.rounds = [{}];
       game.endRound();
       clock.tick(NEXT_ROUND_DELAY);
 
@@ -216,9 +248,9 @@ describe('Game', function () {
       clock.restore();
     });
 
-    it('should start a timer to end the game if there are no rounds left', function () {
+    it('should start a timer to restart the game if there are no rounds left', function () {
       var spy = sinon.spy(game.timer, 'start');
-      var stub = sinon.stub(game, 'end');
+      var stub = sinon.stub(game, 'restart');
 
       var NEXT_ROUND_DELAY = gameConfig.nextRoundDelay;
       var clock = sinon.useFakeTimers();
@@ -240,6 +272,50 @@ describe('Game', function () {
 
   describe('#end()', function () {
 
+    it('should set #guestsCount to 0', function () {
+      game.guestsCount = 10;
+
+      game.end();
+
+      game.guestsCount.should.equal(0);
+    });
+
+    it('should set #rounds to an empty array', function () {
+      game.rounds = [{}, {}, {}];
+
+      game.end();
+
+      game.rounds.should.eql([]);
+    });
+
+    it('should set #currentRound to null', function () {
+      game.currentRound = {};
+
+      game.end();
+
+      should.equal(game.currentRound, null);
+    });
+
+    it('should call timer#stop()', function () {
+      var stub = sinon.stub(game.timer, 'stop');
+
+      game.end();
+
+      stub.should.have.been.called;
+      stub.restore();
+    });
+
+  });
+
+  // Game.prototype.restart = function () {
+  //   this.timer.stop();
+  //   this.io.in('game').emit('game:ended', this.getWinner());
+  //   this.resetPoints();
+  //   this.timer.start(this.start.bind(this), NEXT_GAME_DELAY);
+  // };
+
+  describe('#restart()', function () {
+
     it('should call timer#stop()', function () {
       var stub = sinon.stub(game.timer, 'stop');
 
@@ -255,27 +331,12 @@ describe('Game', function () {
       var winner = {};
 
       stub2.returns(winner);
-
-      game.end();
+      game.restart();
 
       stub1.should.have.been.calledWithExactly('game:ended', winner);
-
       stub1.restore();
       stub2.restore();
     });
-
-    it('should call #restart()', function () {
-      var stub = sinon.stub(game, 'restart');
-
-      game.end();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-  });
-
-  describe('#restart()', function () {
 
     it('should call #resetPoints()', function () {
       var stub = sinon.stub(game, 'resetPoints');
@@ -283,17 +344,6 @@ describe('Game', function () {
       game.restart();
 
       stub.should.have.been.called;
-      stub.restore();
-    });
-
-    it('should set #rounds', function () {
-      var stub = sinon.stub(game, 'generateRounds');
-      var rounds = [];
-      stub.returns(rounds);
-
-      game.restart();
-
-      game.rounds.should.equal(rounds);
       stub.restore();
     });
 

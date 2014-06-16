@@ -13,7 +13,7 @@ var NEXT_GAME_DELAY = gameConfig.nextGameDelay;
 var Game = function (io) {
   this.io = io;
   this.timer = timer;
-  this.rounds = this.generateRounds();
+  this.rounds = [];
   this.players = [];
   this.guestsCount = 0;
 };
@@ -35,6 +35,7 @@ Game.prototype.generateRounds = function () {
 };
 
 Game.prototype.start = function () {
+  this.rounds = this.generateRounds();
   this.startRound();
 };
 
@@ -47,7 +48,7 @@ Game.prototype.startRound = function () {
 };
 
 Game.prototype.endRound = function () {
-  var callback = this.rounds.length ? this.startRound : this.end;
+  var callback = this.rounds.length ? this.startRound : this.restart;
 
   this.timer.stop();
   this.io.in('game').emit('round:ended', this.players, this.currentRound.getAnswer());
@@ -55,14 +56,16 @@ Game.prototype.endRound = function () {
 };
 
 Game.prototype.end = function () {
+  this.guestsCount = 0;
+  this.rounds = [];
+  this.currentRound = null;
   this.timer.stop();
-  this.io.in('game').emit('game:ended', this.getWinner());
-  this.restart();
 };
 
 Game.prototype.restart = function () {
+  this.timer.stop();
+  this.io.in('game').emit('game:ended', this.getWinner());
   this.resetPoints();
-  this.rounds = this.generateRounds();
   this.timer.start(this.start.bind(this), NEXT_GAME_DELAY);
 };
 
@@ -104,7 +107,6 @@ Game.prototype.handlePlayerRemoval = function (socket) {
   if (this.players.length) {
     this.io.in('game').emit('player:left', this.players);
   } else {
-    this.guestsCount = 0;
     this.end();
   }
 };
