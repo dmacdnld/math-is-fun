@@ -1,6 +1,6 @@
 {
   "name": "math-trivia",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A fun math trivia game!",
   "author": "Daniel MacDonald <dnmacdnld@gmail.com>",
   "contributors": [
@@ -42,5 +42,5 @@
   "engines": {
     "node": ">=0.10"
   },
-  "subdomain": "mathtrivia"
+  "subdomain": "math-trivia-game"
 }
