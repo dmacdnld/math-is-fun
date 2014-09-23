@@ -40,7 +40,7 @@
     "url": "https://github.com/dmacdnld/math-trivia.git"
   },
   "engines": {
-    "node": ">=0.10"
+    "node": "0.10.x"
   },
   "subdomain": "math-trivia-game"
 }
