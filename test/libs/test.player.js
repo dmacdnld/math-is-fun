@@ -1,68 +1,112 @@
-var Player = require('../../libs/player');
+import _ from 'lodash';
 
-describe('Player',function () {
-  var player;
-  var id;
-  var name;
+import Player from '../../app/server/lib/player';
+import { ROUND_POINTS, GUEST_NAME_PREFIX } from '../../app/shared/game-config';
 
-  beforeEach(function (done) {
-    id = 1;
-    name = 'Name';
-    player = new Player(id, name);
+describe('Player', () => {
+  let player;
+  let socketId;
+  let name;
 
-    done();
+  beforeEach(() => {
+    socketId = '123abc';
+    name = 'Mathlete';
+    player = Player.create(socketId, name);
   });
 
-  it('should set the passed in ID when instantiated', function (done) {
-    player.id.should.equal(id);
-    done();
-  });
+  describe('#awardPoints()', () => {
 
-  it('should set the passed in name when instantiated', function (done) {
-    player.name.should.equal(name);
-    done();
-  });
+    it(`should add ${ ROUND_POINTS } points`, () => {
+      const expected = player.points + ROUND_POINTS;
 
-  it('should create a guest name when instantiated with no name', function (done) {
-    var player = new Player(2, '', 0);
-    var expected = 'guest1';
-    var actual = player.name;
+      Player.awardPoints(player);
 
-    actual.should.equal.expected;
-
-    done();
-  });
-
-  it('should have 0 points when instantiated', function (done) {
-    player.points.should.equal(0);
-    done();
-  });
-
-  describe('#addPoints()', function () {
-
-    it('should add points', function (done) {
-      var expected = player.points + gameConfig.roundPoints;
-      var actual = player.addPoints();
+      const actual = player.points;
 
       actual.should.equal(expected);
-
-      done();
     });
 
   });
 
-  describe('#resetPoints()', function () {
+  describe('#resetPoints()', () => {
 
-    it('should reset points', function (done) {
-      var expected = 0;
-      var actual;
+    it(`should set points to 0`, () => {
+      const expected = 0;
 
-      player.addPoints();
-      actual = player.resetPoints();
+      Player.awardPoints(player);
+      Player.resetPoints(player);
+
+      const actual = player.points;
 
       actual.should.equal(expected);
+    });
 
-      done();
+  });
+
+  describe('#create()', () => {
+
+    describe('returns a player with #socketId and', () => {
+
+      it('should set the passed in socketId', () => {
+        player.socketId.should.equal(socketId);
+      });
+
+    });
+
+    describe('returns a player with #name and', () => {
+
+      describe('when a name is passed in', () => {
+
+        it('should set #name as that value', () => {
+          player.name.should.equal(name);
+        });
+
+      });
+
+      describe('when no name is passed in', () => {
+
+        it('should set #name with a guest name', () => {
+          const guest = Player.create(socketId);
+
+          guest.name.should.match(new RegExp(`^${ GUEST_NAME_PREFIX }`));
+        });
+
+      });
+
+    });
+
+    describe('returns a player with #points and', () => {
+
+      it('should be set to 0', () => {
+        player.points.should.equal(0);
+      });
+
+    });
+
+    describe('returns a player with #toJSON() and', () => {
+      let json;
+
+      beforeEach(() => {
+        json = player.toJSON();
+      });
+
+      describe('#toJSON()', () => {
+
+        it('should return an object with only #name and #points', () => {
+          const otherProperties = _.keys(_.omit(json, ['name', 'points']));
+          otherProperties.should.have.length(0);
+        });
+
+        it('should return an object with player#name', () => {
+          json.name.should.equal(player.name);
+        });
+
+        it('should return an object with player#points', () => {
+          json.points.should.equal(player.points);
+        });
+
+      });
+
     });
 
   });

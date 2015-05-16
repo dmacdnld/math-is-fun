@@ -1,839 +1,136 @@
-var http = require('http').Server;
+import { EventEmitter } from 'events';
 
-var Game = require('../../libs/game');
-var Round = require('../../libs/round');
-var Player = require('../../libs/player');
-var gameConfig = require('../../libs/game-config');
+import sinon from 'sinon';
+import { expect } from 'chai';
+import _ from 'lodash';
 
-describe('Game', function () {
-  var io, inResult, socket, game;
+import Game from '../../app/server/lib/game';
+import Round from '../../app/server/lib/round';
+import Player from '../../app/server/lib/player';
+import { ROUNDS_LENGTH, ROUND_DURATION, NEXT_GAME_DELAY, NEXT_ROUND_DELAY, GUEST_NAME_PREFIX, ROUND_POINTS } from '../../app/shared/game-config';
 
-  beforeEach(function (done) {
-    inResult = {
-      emit: function () {}
-    };
-    io = {
-      on: function (event, fn) {
-        fn();
-      },
-      in: function () {
-        return inResult;
-      }
-    };
-    game = new Game(io);
-    socket = {
-      id: 1,
-      emit: function () {},
-      join: function () {},
-      broadcast: {
-        to: function () {
-          return {
-            emit: function () {}
-          };
-        }
-      },
-      on: function (event, fn) {
-        fn();
-      }
-    };
+describe('Game', () => {
+  const playerSocketId = '123abc';
+  const playerName = 'Mathlete';
+  let game;
 
-    done();
+  beforeEach(() => {
+    game = Game.create();
   });
 
-  describe('#init()', function () {
+  describe('#create()', () => {
 
-    it('should attach an event listener to the \'connection\' event', function () {
-      var stub = sinon.stub(game.io, 'on');
+    describe('returns a game with #currentRound', () => {
 
-      game.init();
+      it('should be null', () => {
+        expect(game.currentRound).to.be.null;
+      });
 
-      stub.should.have.been.calledWith('connection');
-      stub.restore();
     });
 
-  });
+    describe('returns a game with #roundsTotal', () => {
 
-  // Game.prototype.handleConnection = function (socket) {
-  //   socket.on('disconnect', this.handlePlayerRemoval.bind(this, socket));
-  //   socket.on('player:applied', this.handlePlayerApplication.bind(this, socket));
-  //   socket.on('choice:submitted', this.handleChoiceSubmission.bind(this, socket));
-  // };
+      it(`should equal ${ ROUNDS_LENGTH }`, () => {
+        game.roundsTotal.should.equal(ROUNDS_LENGTH);
+      });
 
-  describe('#handleConnection()', function () {
-    var stub;
-
-    beforeEach(function (done) {
-      stub = sinon.stub(socket, 'on');
-
-      done();
     });
 
-    afterEach(function (done) {
-      stub.restore();
+    describe('returns a game with #rounds', () => {
 
-      done();
+      it('should be an empty array', () => {
+        game.rounds.should
+          .be.an('array').and
+          .be.empty;
+      });
+
     });
 
-    it('should attach an even listener to the \'disconnect\' event', function () {
-      game.handleConnection(socket);
+    describe('returns a game with #players', () => {
 
-      stub.should.have.been.calledWith('disconnect');
+      it('should be an empty array', () => {
+        game.players.should
+          .be.an('array').and
+          .be.empty;
+      });
+
     });
 
-    it('should attach an even listener to the \'player:applied\' event', function () {
-      game.handleConnection(socket);
+    describe('returns a game with #timeouts', () => {
 
-      stub.should.have.been.calledWith('player:applied');
+      it('should be an empty array', () => {
+        game.timeouts.should
+          .be.an('array').and
+          .be.empty;
+      });
+
     });
 
-    it('should attach an even listener to the \'choice:submitted\' event', function () {
-      game.handleConnection(socket);
+    describe('returns a game with #emitter', () => {
 
-      stub.should.have.been.calledWith('choice:submitted');
+      it('should be an EventEmitter instance', () => {
+        game.emitter.should.be.an.instanceof(EventEmitter);
+      });
+
     });
 
-  });
+    describe('returns a round with #toJSON() and', () => {
+      let json, currentRound, roundsTotal, players, winners, timeUntilStart;
 
-  describe('#generateRounds()', function () {
+      describe('#toJSON()', () => {
 
-    it('should return an array of rounds', function () {
-        var rounds = game.generateRounds();
-        var actual = rounds.every(function (round) {
-          return round instanceof Round;
+        beforeEach(() => {
+          game = Game.create();
+          game.currentRound = Symbol('currentRound');
+          game.roundsTotal = Symbol('roundsTotal');
+          game.players = Symbol('players');
+          game.winners = Symbol('winners');
+          game.timeUntilStart = Symbol('timeUntilStart');
+          json = game.toJSON();
         });
 
-        actual.should.be.true;
-    });
-
-    it('should return an array of the correct length', function () {
-        var rounds = game.generateRounds();
-        var expected = gameConfig.roundsLength;
-        var actual = rounds.length;
-
-        actual.should.equal(expected);
-    });
-
-  });
-
-  describe('#start()', function () {
-
-    it('should set #rounds', function () {
-      var stub1 = sinon.stub(game, 'generateRounds');
-      var stub2 = sinon.stub(game, 'startRound');
-      var rounds = [];
-      stub1.returns(rounds);
-
-      game.start();
-
-      game.rounds.should.equal(rounds);
-      stub1.restore();
-      stub2.restore();
-    });
-
-    it('should call #startRound()', function () {
-      var stub = sinon.stub(game, 'startRound');
-
-      game.start();
-
-      stub.should.have.been.called;
-    });
-
-  });
-
-  describe('#startRound()', function () {
-    var roundA, roundB, rounds;
-
-    beforeEach(function () {
-      roundA = { start: function () {} };
-      roundB = { start: function () {} };
-      rounds = [roundA, roundB];
-      game.rounds = rounds;
-    });
-
-    it('should assign the current round', function () {
-      var expected = roundB;
-
-      game.startRound();
-
-      var actual = game.currentRound;
-      actual.should.equal(expected);
-    });
-
-    it('should call currentRound#start()', function () {
-      var stub = sinon.stub(roundB, 'start');
-
-      game.startRound();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-    it('should emit a \'round:started\' event to the \'game\' room', function () {
-      var stub1 = sinon.stub(game.io.in('game'), 'emit');
-      var stub2 = sinon.stub(Date, 'now');
-      var now = 1;
-
-      stub2.returns(now);
-      game.startRound();
-
-      stub1.should.have.been.calledWithExactly('round:started', game.players, game.currentRound.trivia, game.currentRound.endTime - now);
-      stub1.restore();
-      stub2.restore();
-    });
-
-    it('should start the timer to call #endRound()', function () {
-      var spy = sinon.spy(game.timer, 'start');
-      var stub = sinon.stub(game, 'endRound');
-
-      var ROUND_DURATION = gameConfig.roundDuration;
-      var clock = sinon.useFakeTimers();
-
-      game.startRound();
-      clock.tick(ROUND_DURATION);
-
-      spy.should.have.been.called;
-      spy.firstCall.args[1].should.equal(ROUND_DURATION);
-      stub.should.have.been.called;
-
-      spy.restore();
-      stub.restore();
-      clock.restore();
-    });
-
-  });
-
-  describe('#endRound()', function () {
-    var answer = 1;
-
-    beforeEach(function (done) {
-      game.currentRound = { getAnswer: function () { return answer; } };
-      done();
-    });
-
-    it('should call timer#stop()', function () {
-      var stub = sinon.stub(game.timer, 'stop');
-
-      game.endRound();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-    it('should emit a \'round:ended\' event to the \'game\' room', function () {
-      var stub = sinon.stub(game.io.in('game'), 'emit');
-
-      game.endRound();
-
-      stub.should.have.been.calledWithExactly('round:ended', game.players, answer);
-      stub.restore();
-    });
-
-    it('should start a timer to start a new round if there are rounds left', function () {
-      var spy = sinon.spy(game.timer, 'start');
-      var stub = sinon.stub(game, 'startRound');
-
-      var NEXT_ROUND_DELAY = gameConfig.nextRoundDelay;
-      var clock = sinon.useFakeTimers();
-
-      game.rounds = [{}];
-      game.endRound();
-      clock.tick(NEXT_ROUND_DELAY);
-
-      spy.should.have.been.called;
-      spy.firstCall.args[1].should.equal(NEXT_ROUND_DELAY);
-      stub.should.have.been.called;
-
-      spy.restore();
-      stub.restore();
-      clock.restore();
-    });
-
-    it('should start a timer to restart the game if there are no rounds left', function () {
-      var spy = sinon.spy(game.timer, 'start');
-      var stub = sinon.stub(game, 'restart');
-
-      var NEXT_ROUND_DELAY = gameConfig.nextRoundDelay;
-      var clock = sinon.useFakeTimers();
-
-      game.rounds.length = 0;
-      game.endRound();
-      clock.tick(NEXT_ROUND_DELAY);
-
-      spy.should.have.been.called;
-      spy.firstCall.args[1].should.equal(NEXT_ROUND_DELAY);
-      stub.should.have.been.called;
-
-      spy.restore();
-      stub.restore();
-      clock.restore();
-    });
-
-  });
-
-  describe('#end()', function () {
-
-    it('should set #guestsCount to 0', function () {
-      game.guestsCount = 10;
-
-      game.end();
-
-      game.guestsCount.should.equal(0);
-    });
-
-    it('should set #rounds to an empty array', function () {
-      game.rounds = [{}, {}, {}];
-
-      game.end();
-
-      game.rounds.should.eql([]);
-    });
-
-    it('should set #currentRound to null', function () {
-      game.currentRound = {};
-
-      game.end();
-
-      should.equal(game.currentRound, null);
-    });
-
-    it('should call timer#stop()', function () {
-      var stub = sinon.stub(game.timer, 'stop');
-
-      game.end();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-  });
-
-  // Game.prototype.restart = function () {
-  //   this.timer.stop();
-  //   this.io.in('game').emit('game:ended', this.getWinner());
-  //   this.resetPoints();
-  //   this.timer.start(this.start.bind(this), NEXT_GAME_DELAY);
-  // };
-
-  describe('#restart()', function () {
-
-    it('should call timer#stop()', function () {
-      var stub = sinon.stub(game.timer, 'stop');
-
-      game.end();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-    it('should emit a \'game:ended\' event to the \'game\' room', function () {
-      var stub1 = sinon.stub(game.io.in('game'), 'emit');
-      var stub2 = sinon.stub(game, 'getWinner');
-      var winner = {};
-
-      stub2.returns(winner);
-      game.restart();
-
-      stub1.should.have.been.calledWithExactly('game:ended', winner);
-      stub1.restore();
-      stub2.restore();
-    });
-
-    it('should call #resetPoints()', function () {
-      var stub = sinon.stub(game, 'resetPoints');
-
-      game.restart();
-
-      stub.should.have.been.called;
-      stub.restore();
-    });
-
-    it('should start a timer to start the next game', function () {
-      var spy = sinon.spy(game.timer, 'start');
-      var stub = sinon.stub(game, 'start');
-
-      var NEXT_GAME_DELAY = gameConfig.nextGameDelay;
-      var clock = sinon.useFakeTimers();
-
-      game.restart();
-      clock.tick(NEXT_GAME_DELAY);
-
-      spy.should.have.been.called;
-      spy.firstCall.args[1].should.equal(NEXT_GAME_DELAY);
-      stub.should.have.been.called;
-
-      spy.restore();
-      stub.restore();
-      clock.restore();
-    });
-
-  });
-
-  describe('#hasPlayerOfName()', function () {
-    var name = 'Name';
-
-    beforeEach( function (done) {
-      var player = { name: name };
-      game.players = [player];
-
-      done();
-    });
-
-    it('should return true if any player has the same name as the one passed in', function (done) {
-      game.hasPlayerOfName(name).should.be.true;
-
-      done();
-    });
-
-    it('should return false if no player has the same name as the one passed in', function (done) {
-      game.hasPlayerOfName('OtherName').should.be.false;
-
-      done();
-    });
-
-  });
-
-  describe('#handlePlayerApplication()', function () {
-
-    describe('name taken', function () {
-      it('should emit a \'player:rejected\' event', function () {
-        var stub1 = sinon.stub(socket, 'emit');
-        var stub2 = sinon.stub(game, 'hasPlayerOfName');
-        stub2.returns(true);
-
-        game.handlePlayerApplication(socket);
-
-        stub1.should.have.been.calledWithExactly('player:rejected');
-        stub1.restore();
-        stub2.restore();
-      });
-    });
-
-    describe('name not taken', function () {
-      var falseStub;
-
-      beforeEach(function (done) {
-        falseStub = sinon.stub(game, 'hasPlayerOfName');
-        falseStub.returns(false);
-        done();
-      });
-
-      afterEach(function (done) {
-        falseStub.restore();
-        done();
-      });
-
-      it('should call #addPlayer()', function () {
-        var name = 'Name';
-        var stub = sinon.stub(game, 'addPlayer');
-
-        game.handlePlayerApplication(socket, name);
-
-        stub.should.have.been.calledWithExactly(socket.id, name);
-        stub.restore();
-      });
-
-      it('should call #start() when no game is in progress', function () {
-        var stub = sinon.stub(game, 'start');
-
-        game.currentRound = false;
-        game.handlePlayerApplication(socket);
-
-        stub.should.have.been.called;
-        stub.restore();
-      });
-
-      it('should add the socket to the \'game\' room', function () {
-        var stub = sinon.stub(socket, 'join');
-
-        game.handlePlayerApplication(socket);
-
-        stub.should.have.been.called;
-        stub.restore();
-      });
-
-      it('should emit a \'player:joined\' event', function () {
-        var players = [];
-        var trivia = {};
-        var endTime = 2222222222222;
-        var stub1 = sinon.stub(socket, 'emit');
-        var stub2 = sinon.stub(Date, 'now');
-        var now = 1111111111111;
-        var timeLeft = endTime - now;
-        stub2.returns(now);
-        game.players = players;
-        game.currentRound = {
-          trivia: trivia,
-          endTime: endTime
-        };
-
-        game.handlePlayerApplication(socket);
-
-        stub1.should.have.been.calledWithExactly('player:joined', players, trivia, timeLeft);
-        stub1.restore();
-        stub2.restore();
-      });
-
-      it('should broadcast a \'player:joined\' event to the \'game\' room', function () {
-        var players = [];
-        var toValue = { emit: function () {} };
-        var stub1 = sinon.stub(socket.broadcast, 'to');
-        var stub2 = sinon.stub(toValue, 'emit');
-        stub1.returns(toValue);
-        game.players = players;
-
-        game.handlePlayerApplication(socket);
-
-        stub2.should.have.been.calledWithExactly('player:joined', players);
-        stub1.restore();
-        stub2.restore();
-      });
-
-    });
-
-  });
-
-  describe('#addPlayer()', function () {
-
-    it('should increment the guests count when new player is a guest', function () {
-      var expected = 1;
-
-      game.addPlayer(1);
-      var actual = game.guestsCount;
-
-      actual.should.equal(expected);
-    });
-
-    it('should add a player to #players', function () {
-      var id = 1;
-      var name = 'Name';
-      var addedPlayer;
-
-      game.addPlayer(id, name);
-
-      addedPlayer = game.players[0];
-
-      addedPlayer.should
-        .be.an.instanceof(Player);
-
-      addedPlayer.should
-        .have.a.property('id')
-          .that.equals(id);
-
-      addedPlayer.should
-        .have.a.property('name')
-          .that.equals(name);
-    });
-
-  });
-
-  describe('.handlePlayerRemoval()', function () {
-    it('should call #getPlayer()', function () {
-      var stub = sinon.stub(game, 'getPlayer');
-
-      game.handlePlayerRemoval(socket);
-
-      stub.should.have.been.calledWithExactly(socket.id);
-      stub.restore();
-    });
-
-    it('should short circuit if no player is found', function () {
-      var stub = sinon.stub(game, 'removePlayer');
-
-      game.handlePlayerRemoval(socket);
-
-      stub.should.not.have.been.called;
-      stub.restore();
-    });
-
-    it('should call #removePlayer if player is found', function () {
-      var player = {};
-      var stub1 = sinon.stub(game, 'getPlayer');
-      var stub2 = sinon.stub(game, 'removePlayer');
-
-      stub1.returns(player);
-      game.handlePlayerRemoval(socket);
-
-      stub2.should.have.been.calledWithExactly(player);
-      stub1.restore();
-      stub2.restore();
-    });
-
-    describe('players left', function () {
-      var getPlayerStub;
-      var removePlayerStub;
-
-      beforeEach(function (done) {
-        getPlayerStub = sinon.stub(game, 'getPlayer');
-        getPlayerStub.returns(true);
-        removePlayerStub = sinon.stub(game, 'removePlayer');
-        game.players = [{}];
-
-        done();
-      });
-
-      afterEach(function (done) {
-        getPlayerStub.restore();
-        removePlayerStub.restore();
-
-        done();
-      });
-
-      it('should emit a \'player:left\' event to the \'game\' room', function () {
-        var spy = sinon.spy(inResult, 'emit');
-
-        game.handlePlayerRemoval(socket);
-
-        spy.should.have.been.calledWithExactly('player:left', game.players);
-        spy.restore();
-      });
-    });
-
-    describe('no players left', function () {
-      var getPlayerStub;
-      var removePlayerStub;
-
-      beforeEach(function (done) {
-        getPlayerStub = sinon.stub(game, 'getPlayer');
-        getPlayerStub.returns(true);
-        removePlayerStub = sinon.stub(game, 'removePlayer');
-        game.players = [];
-
-        done();
-      });
-
-      afterEach(function (done) {
-        getPlayerStub.restore();
-        removePlayerStub.restore();
-
-        done();
-      });
-
-      it('should call #end()', function () {
-        var stub = sinon.stub(game, 'end');
-
-        game.handlePlayerRemoval(socket);
-
-        stub.should.have.been.called;
-        stub.restore();
-      });
-
-    });
-
-  });
-
-  describe('#removePlayer()', function () {
-
-    it('should remove the player from #players if player found', function () {
-      var player = {};
-      game.players = [{}, player];
-
-      game.removePlayer(player);
-
-      var index = game.players.indexOf(player);
-
-      index.should.equal(-1);
-    });
-
-    it('should return null if player found', function () {
-      var expected = null;
-      var actual = game.removePlayer();
-
-      should.equal(actual, expected);
-    });
-
-  });
-
-  describe('#getPlayer()', function () {
-
-    it('should return a player with a matching ID', function () {
-      var id = 1;
-      var player = { id: id };
-      var expected = player;
-
-      game.players = [player];
-
-      var actual = game.getPlayer(id);
-
-      actual.should.equal(expected);
-    });
-
-    it('should return undefined if no matching ID found', function () {
-      var expected = undefined;
-
-      game.players = [];
-
-      var actual = game.getPlayer();
-
-      should.equal(actual, expected);
-    });
-
-  });
-
-  describe('#getWinner()', function () {
-
-    it('should return null if no player has more than 0 points', function () {
-      var expected = null;
-
-      game.players = [{ points: 0 }];
-
-      var actual = game.getWinner();
-
-      should.equal(actual, expected);
-    });
-
-    it('should return the players with the most points if any have more than 0 points', function () {
-      var playerA = { points: 30 };
-      var playerB = { points: 30 };
-      var expected = [playerA, playerB];
-
-      game.players = [{ points: 20 }, playerA, playerB];
-
-      var actual = game.getWinner();
-
-      actual.should.eql(expected);
-    });
-
-  });
-
-  describe('#resetPoints()', function () {
-
-    it('should invoke player#resetPoints() for each player', function () {
-      var stub = sinon.stub();
-
-      game.players = [{ resetPoints: stub }, { resetPoints: stub }];
-      game.resetPoints();
-
-      stub.should.have.been.calledTwice;
-    });
-
-  });
-
-  describe('#handleChoiceSubmission()', function () {
-
-    describe('when round already answered', function () {
-
-      it('should short circuit', function () {
-        var currentRound = { hasPlayerAnswered: function () { return true; } };
-        var stub = sinon.stub(game, 'trackPlayersAnswered');
-
-        game.currentRound = currentRound;
-        game.handleChoiceSubmission(socket);
-
-        stub.should.not.have.been.called;
-        stub.restore();
-      });
-
-    });
-
-    describe('when round not answered', function () {
-
-      it('should call #trackPlayersAnswered()', function () {
-        var player = {};
-        var currentRound = {
-          hasPlayerAnswered: function () { return false; },
-          isChoiceCorrect: function () {},
-          getAnswer: function () {}
-        };
-        var stub1 = sinon.stub(game, 'getPlayer');
-        var stub2 = sinon.stub(game, 'trackPlayersAnswered');
-
-        stub1.returns(player);
-        game.currentRound = currentRound;
-        game.handleChoiceSubmission(socket);
-
-        stub2.should.have.been.calledWithExactly(player);
-        stub1.restore();
-        stub2.restore();
-      });
-
-      describe('and when choice is correct', function () {
-
-        it('should add points to the player', function () {
-          var player = {
-            addPoints: function () {}
-          };
-          var currentRound = {
-            hasPlayerAnswered: function () { return false; },
-            isChoiceCorrect: function () { return true; },
-            getAnswer: function () {},
-            playersAnswered: []
-          };
-          var stub1 = sinon.stub(game, 'getPlayer');
-          var stub2 = sinon.stub(player, 'addPoints');
-
-          stub1.returns(player);
-          game.currentRound = currentRound;
-          game.handleChoiceSubmission(socket);
-
-          stub2.should.have.been.called;
-          stub1.restore();
-          stub2.restore();
+        // currentRound roundsTotal players winners timeUntilStart
+        it('should return an object with only #currentRound, #roundsTotal, #players, #winners, #timeUntilStart', () => {
+          const otherProperties = _.keys(_.omit(json, ['currentRound', 'roundsTotal', 'players', 'winners', 'timeUntilStart']));
+          otherProperties.should.have.length(0);
         });
 
-        it('should end the round', function () {
-          var player = {
-            addPoints: function () {}
-          };
-          var currentRound = {
-            hasPlayerAnswered: function () { return false; },
-            isChoiceCorrect: function () { return true; },
-            getAnswer: function () {},
-            playersAnswered: []
-          };
-          var stub1 = sinon.stub(game, 'getPlayer');
-          var stub2 = sinon.stub(game, 'endRound');
+        describe('returns an object with #currentRound and', () => {
 
-          stub1.returns(player);
-          game.currentRound = currentRound;
-          game.handleChoiceSubmission(socket);
+          it('should equal game#currentRound', () => {
+            json.currentRound.should.equal(game.currentRound);
+          });
 
-          stub2.should.have.been.called;
-          stub1.restore();
-          stub2.restore();
         });
 
-      });
+        describe('returns an object with #roundsTotal and', () => {
 
-      describe('and when choice is incorrect', function () {
-        var event = 'choice:rejected';
-        var choice = 1;
-        var answer = 2;
+          it('should equal game#roundsTotal', () => {
+            json.roundsTotal.should.equal(game.roundsTotal);
+          });
 
-        it('should emit a \'choice:rejected\' event', function () {
-          var currentRound = {
-            hasPlayerAnswered: function () { return false; },
-            isChoiceCorrect: function () { return false; },
-            getAnswer: function () { return answer; },
-            playersAnswered: []
-          };
-          var stub = sinon.stub(socket, 'emit');
-
-          game.currentRound = currentRound;
-          game.handleChoiceSubmission(socket, choice);
-
-          stub.should.have.been.calledWithExactly(event, answer, choice);
-          stub.restore();
         });
 
-        describe('and when all players have answered', function () {
+        describe('returns an object with #players and', () => {
 
-          it('should end the round', function () {
-            var currentRound = {
-              hasPlayerAnswered: function () { return false; },
-              isChoiceCorrect: function () { return false; },
-              getAnswer: function () { return answer; },
-              playersAnswered: []
-            };
-            var stub1 = sinon.stub(game, 'haveAllPlayersAnswered');
-            var stub2 = sinon.stub(game, 'endRound');
+          it('should equal game#players', () => {
+            json.players.should.equal(game.players);
+          });
 
-            stub1.returns(true);
-            game.currentRound = currentRound;
-            game.handleChoiceSubmission(socket, choice);
+        });
 
-            stub1.should.have.been.called;
-            stub1.restore();
-            stub2.restore();
+        describe('returns an object with #winners and', () => {
+
+          it('should equal game#winners', () => {
+            json.winners.should.equal(game.winners);
+          });
+
+        });
+
+        describe('returns an object with #timeUntilStart and', () => {
+
+          it('should equal game#timeUntilStart', () => {
+            json.timeUntilStart.should.equal(game.timeUntilStart);
           });
 
         });
@@ -844,53 +141,625 @@ describe('Game', function () {
 
   });
 
-  describe('#trackPlayersAnswered()', function () {
+  describe('#addPlayerToGame()', () => {
 
-    it('should add the player to the list of players who answered', function () {
-      var player = {};
-      var currentRound = { playersAnswered: [] };
-      var stub = sinon.stub(currentRound.playersAnswered, 'push');
+    describe('when the player submits a name already taken', () => {
 
-      game.currentRound = currentRound;
-      game.trackPlayersAnswered(player);
+      it('should emit a rejection event', (done) => {
+        game.emitter.on('player:rejected', (socketId) => {
+          socketId.should.equal(playerSocketId);
+          done();
+        });
 
-      stub.should.have.been.calledWithExactly(player);
+        Game.addPlayerToGame(game, playerSocketId, playerName);
+        Game.addPlayerToGame(game, playerSocketId, playerName);
+      });
+
+    });
+
+    describe('when the player submits a name not taken', () => {
+
+      it('should add the player to the game with name applied with', () => {
+        Game.addPlayerToGame(game, playerSocketId, playerName);
+        _.findWhere(game.players, { socketId: playerSocketId, name: playerName }).should.exist;
+      });
+
+    });
+
+    describe('when the player submits no name', () => {
+
+      it('should add the player to the game with a generated name', () => {
+        Game.addPlayerToGame(game, playerSocketId);
+
+        const addedPlayer = _.findWhere(game.players, { socketId: playerSocketId });
+        addedPlayer.name.startsWith(GUEST_NAME_PREFIX);
+      });
+
+    });
+
+    describe('when the player is added to the game and', () => {
+
+      describe('when the game has already started', () => {
+
+        it('should emit a player addition event', (done) => {
+          game.emitter.on('player:added', (socketId, game) => {
+            socketId.should.equal(playerSocketId);
+            game.currentRound.timeLeft.should.exist;
+            done();
+          });
+          game.currentRound = Round.create();
+
+          expect(game.currentRound.timeLeft).to.be.undefined;
+          Game.addPlayerToGame(game, playerSocketId);
+        });
+
+      });
+
+      describe('when the game has not been started', () => {
+
+        it('should start the game', () => {
+          const spy = sinon.spy(Game, 'start');
+          Game.addPlayerToGame(game, playerSocketId);
+          spy.should.have.been.calledWithExactly(game);
+        });
+
+      });
+
+    });
+
+  });
+
+  describe('#removePlayerFromGame()', () => {
+    let player;
+
+    beforeEach(() => {
+      player = Player.create(playerSocketId);
+    });
+
+    it('should remove the player with the matching #socketId', () => {
+      game.players.push();
+      Game.removePlayerFromGame(game, playerSocketId);
+      game.players.should.be.empty
+    });
+
+    describe('when there are no players remaining', () => {
+
+      it('should end the game', () => {
+        game.rounds.push(Round.create());
+        game.currentRound = Round.create();
+        Game.removePlayerFromGame(game, playerSocketId);
+        game.rounds.should.be.empty;
+        expect(game.currentRound).to.be.null;
+      });
+
+    });
+
+    describe('when there are players remaining', () => {
+
+      it('should emit a player removal event', (done) => {
+        game.emitter.on('player:removed', (game) => {
+          game.players.should.not.contain(player);
+          done();
+        });
+        game.players.length = 1;
+        Game.removePlayerFromGame(game, playerSocketId);
+      });
+
+    });
+
+  });
+
+  describe('#start()', () => {
+    let stub;
+
+    beforeEach(() => {
+      stub = sinon.stub(Game, 'startNextRound');
+    });
+
+    afterEach(() => {
       stub.restore();
     });
 
-  });
-
-  describe('#haveAllPlayersAnswered()', function () {
-
-    it('should return true if all current players have answered', function () {
-      var players = [{}, {}];
-      var currentRound = { playersAnswered: players };
-
-      game.players = players;
-      game.currentRound = currentRound;
-      var result = game.haveAllPlayersAnswered();
-
-      result.should.be.true;
+    it(`should add ${ ROUNDS_LENGTH } rounds to #rounds`, () => {
+      game.rounds.should.have.length(0);
+      Game.start(game);
+      game.rounds.should.have.length(ROUNDS_LENGTH);
     });
 
-    it('should return false if all current players have not answered', function () {
-      var currentRound = { playersAnswered: [{}, {}] };
+    it(`should delete #winners`, () => {
+      game.winners = [Player.create()];
+      Game.start(game);
+      expect(game.winners).to.be.undefined;
+    });
 
-      game.players = [{}, {}, {}];
-      game.currentRound = currentRound;
-      var result = game.haveAllPlayersAnswered();
+    it(`should delete #timeUntilStart`, () => {
+      game.timeUntilStart = NEXT_GAME_DELAY;
+      Game.start(game);
+      expect(game.timeUntilStart).to.be.undefined;
+    });
 
-      result.should.be.false;
+    it('should call #startNextRound()', () => {
+      Game.start(game);
+      stub.should.have.been.calledWithExactly(game);
     });
 
   });
 
-  /*
-  Game.prototype.haveAllPlayersAnswered = function () {
-    var playersAnswered = this.currentRound.playersAnswered;
-    var currentPlayers = this.players;
-    return _.isEqual(currentPlayers, _.intersection(currentPlayers, playersAnswered));
-  };
-  */
+  describe('#startNextRound()', () => {
+    let stub;
+
+    beforeEach(() => {
+      stub = sinon.stub(Round, 'start');
+    });
+
+    afterEach(() => {
+      stub.restore();
+    });
+
+    describe('when there are rounds to play', () => {
+      let round;
+
+      beforeEach(() => {
+        round = Round.create();
+        game.rounds.push(round);
+      });
+
+      it('should start the next round', () => {
+        Game.startNextRound(game);
+        stub.should.have.been.calledWithExactly(round);
+      });
+
+      it('should set #currentRound', () => {
+        expect(game.currentRound).to.be.null;
+        Game.startNextRound(game);
+        game.currentRound.should.equal(round);
+      });
+
+      it('should emit a round start event', (done) => {
+        game.emitter.on('round:started', (gameWithRoundStarted) => {
+          gameWithRoundStarted.should.equal(game);
+          done();
+        });
+
+        Game.startNextRound(game);
+      });
+
+      describe('when the round timer ends', () => {
+        let sandbox, clock, stub;
+
+        beforeEach(() => {
+          sandbox = sinon.sandbox.create();
+          clock = sandbox.useFakeTimers();
+          stub = sandbox.stub(Game, 'endCurrentRound');
+        });
+
+        afterEach(() => {
+          sandbox.restore();
+        });
+
+        it('should emit a round end event', () => {
+          Game.startNextRound(game);
+          clock.tick(ROUND_DURATION);
+          stub.should.have.been.calledWithExactly(game);
+        });
+
+      });
+
+    });
+
+    describe('when there are no rounds left to play', () => {
+
+      it('should do nothing', () => {
+        Game.startNextRound(game);
+        stub.should.not.have.been.called;
+      });
+
+    });
+
+  });
+
+  describe('#endCurrentRound()', () => {
+    let sandbox, clock, stub, currentRound;
+
+    beforeEach(() => {
+      sandbox = sinon.sandbox.create();
+      clock = sandbox.useFakeTimers();
+      currentRound = game.currentRound = Round.create();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should end the current round', () => {
+      stub = sandbox.stub(Round, 'end');
+      Game.endCurrentRound(game);
+      stub.should.have.been.calledWithExactly(currentRound);
+    });
+
+    it('should end the current round', () => {
+      stub = sandbox.stub(game.emitter, 'emit');
+      Game.endCurrentRound(game);
+      stub.should.have.been.calledWithExactly('round:ended', game);
+    });
+
+    it('should manage the timer', () => {
+      const timeout = {};
+      stub = sandbox.stub(global, 'clearTimeout');
+      game.timeouts.push(timeout);
+      Game.endCurrentRound(game);
+      stub.should.have.been.calledWithExactly(timeout);
+      game.timeouts.should
+        .have.length(1).and
+        .not.include(timeout);
+    });
+
+    describe('when the delay timer ends and', () => {
+
+      describe('when there are rounds left to play', () => {
+
+        beforeEach(() => {
+          stub = sandbox.stub(Game, 'startNextRound');
+          game.rounds.push(Round.create());
+        });
+
+        it('should start the next round', () => {
+          Game.endCurrentRound(game);
+          clock.tick(NEXT_ROUND_DELAY);
+          stub.should.have.been.calledWithExactly(game);
+        });
+
+      });
+
+      describe('when there are no rounds left to play', () => {
+
+        beforeEach(() => {
+          stub = sandbox.stub(Game, 'end');
+          game.rounds = [];
+        });
+
+        it('should end the game', () => {
+          Game.endCurrentRound(game);
+          clock.tick(NEXT_ROUND_DELAY);
+          stub.should.have.been.calledWithExactly(game);
+        });
+
+      });
+
+    });
+
+  });
+
+  describe('#end()', () => {
+    let sandbox, clock, stub;
+
+    beforeEach(() => {
+      sandbox = sinon.sandbox.create();
+      clock = sinon.useFakeTimers();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should clear the timer', () => {
+      stub = sandbox.stub(_, 'each');
+      game.timeouts.push(setTimeout(_.noop), setTimeout(_.noop), setTimeout(_.noop));
+      Game.end(game);
+
+      stub.should.have.been.calledWithExactly(game.timeouts, clearTimeout)
+      game.timeouts.should.be.empty;
+    });
+
+    it('should reset points', () => {
+      stub = sandbox.stub(Game, 'resetPoints');
+      Game.end(game);
+
+      stub.should.have.been.calledWithExactly(game.players);
+    });
+
+    it('should remove all rounds', () => {
+      game.rounds.push(Round.create());
+      Game.end(game);
+
+      game.rounds.should.be.empty;
+    });
+
+    describe('if there are still players', () => {
+      const players = [Player.create(), Player.create()];
+
+      beforeEach(() => {
+        game.players.push(...players);
+      });
+
+      it('should set #winners', () => {
+        stub = sandbox.stub(Game, 'getWinners');
+        stub.returns(players);
+        Game.end(game);
+
+        game.winners.should.deep.equal(players);
+      });
+
+      it('should emit a game end event', () => {
+        stub = sandbox.stub(game.emitter, 'emit');
+        Game.end(game);
+
+        stub.should.have.been.calledWithExactly('game:ended', game);
+      });
+
+      it('should manage the timer', () => {
+        const timeout = _.uniqueId();
+        stub = sandbox.stub(global, 'setTimeout');
+        stub.returns(timeout);
+        Game.end(game);
+
+        stub.should.have.been.calledWithExactly(Game.start, NEXT_GAME_DELAY, game);
+        game.timeouts.should.include(timeout);
+      });
+
+    });
+
+  });
+
+  describe('#getPlayer()', () => {
+
+    it('should return the player matching the passed in socket ID', () => {
+      const socketId = _.uniqueId();
+      const playerA = Player.create(socketId);
+      const playerB = Player.create();
+      const players = [playerA, playerB];
+
+      game.players.push(...players);
+      const result = Game.getPlayer(socketId, players);
+
+      result.should.equal(playerA);
+    });
+
+    it('should return undefined when no player matches the passed in socket ID', () => {
+      const socketId = _.uniqueId();
+      const playerA = Player.create();
+      const playerB = Player.create();
+      const players = [playerA, playerB];
+
+      game.players.push(...players);
+      const result = Game.getPlayer(socketId, players);
+
+      expect(result).to.be.undefined;
+    });
+
+  });
+
+  describe('#haveAllPlayersAnswered()', () => {
+    const playerA = Player.create(_.uniqueId());
+    const playerB = Player.create(_.uniqueId());
+    const playerC = Player.create(_.uniqueId());
+    const playerD = Player.create(_.uniqueId());
+
+    describe('when all players have answered', () => {
+
+      describe('when players have left the game after answering', () => {
+
+        it('should return true if all players answered', () => {
+          const players = [playerA, playerB];
+          const playersAnswered = [playerA, playerB, playerC, playerD];
+          const result = Game.haveAllPlayersAnswered(players, playersAnswered);
+
+          result.should.be.true;
+        });
+
+      });
+
+      describe('when no players have left the game after answering', () => {
+
+        it('should return true if players have since left the game', () => {
+          const players = [playerA, playerB, playerC, playerD];
+          const playersAnswered = [playerA, playerB, playerC, playerD];
+          const result = Game.haveAllPlayersAnswered(players, playersAnswered);
+
+          result.should.be.true;
+        });
+
+      });
+
+    });
+
+    describe('when not all players have answered', () => {
+
+      it('should return false', () => {
+          const players = [playerA, playerB, playerC, playerD];
+          const playersAnswered = [playerA, playerB];
+          const result = Game.haveAllPlayersAnswered(players, playersAnswered);
+
+          result.should.be.false;
+      });
+
+    });
+
+  });
+
+  describe('#evaluateChosenAnswer()', () => {
+    const getTimesPlayerAnsweredCount = () => _.where(playersAnswered, player).length;
+    let player, playersAnswered;
+
+    beforeEach(() => {
+      player = Player.create(playerSocketId);
+      game.players.push(player);
+      game.currentRound = Round.create();
+      playersAnswered = game.currentRound.playersAnswered;
+    });
+
+    describe('player already answered', () => {
+
+      it('should not evaluate subsequent answer submissions', () => {
+        game.currentRound.playersAnswered.push(player);
+
+        getTimesPlayerAnsweredCount().should.equal(1);
+        Game.evaluateChosenAnswer(game, player.socketId);
+        getTimesPlayerAnsweredCount().should.equal(1);
+      });
+
+    });
+
+    describe('round already ended', () => {
+
+      it('should not evaluate subsequent answer submissions', () => {
+        game.currentRound.timeLeft = 0;
+
+        getTimesPlayerAnsweredCount().should.equal(0);
+        Game.evaluateChosenAnswer(game, player.socketId);
+        getTimesPlayerAnsweredCount().should.equal(0);
+      });
+
+    });
+
+    describe('player has not answered and round has not ended', () => {
+      let answer;
+
+      beforeEach(() => {
+        answer = game.currentRound.trivia.answer;
+      });
+
+      it('should record that the player chose an answer', () => {
+        getTimesPlayerAnsweredCount().should.equal(0);
+        Game.evaluateChosenAnswer(game, player.socketId);
+        getTimesPlayerAnsweredCount().should.equal(1);
+      });
+
+      describe('and chosen answer is correct', () => {
+
+        it('should award points to the player', () => {
+          player.points.should.equal(0);
+          Game.evaluateChosenAnswer(game, player.socketId, answer);
+          player.points.should.equal(ROUND_POINTS);
+        });
+
+        it('should emit a round end event', (done) => {
+          game.emitter.on('round:ended', (gameWithRoundEnded) => {
+            gameWithRoundEnded.should.equal(game);
+            done();
+          });
+
+          Game.evaluateChosenAnswer(game, player.socketId, answer);
+        });
+
+      });
+
+      describe('and chosen answer is incorrect and', () => {
+        let incorrectAnswer = answer + 1;
+
+        describe('all players have answered', () => {
+
+          it('should emit a round end event', (done) => {
+            game.emitter.on('round:ended', (gameWithRoundEnded) => {
+              gameWithRoundEnded.should.equal(game);
+              done();
+            });
+
+            Game.evaluateChosenAnswer(game, player.socketId, incorrectAnswer);
+          });
+
+        });
+
+        describe('not all players have answered', () => {
+
+          beforeEach(() => {
+            game.players.push(Player.create());
+          });
+
+          it('should emit a answer rejection event', (done) => {
+            game.emitter.on('answer:rejected', (socketId, gameWithAnswerRejected) => {
+              const gameWithRoundEnded = _.cloneDeep(game);
+              Round.end(gameWithRoundEnded.currentRound);
+
+              socketId.should.equal(player.socketId);
+              gameWithAnswerRejected.should.deep.equal(gameWithRoundEnded);
+              Round.hasEnded(game.currentRound).should.be.false;
+              done();
+            });
+
+            Game.evaluateChosenAnswer(game, player.socketId, incorrectAnswer);
+          });
+
+        });
+
+      });
+
+    });
+
+  });
+
+  describe('#getWinners()', () => {
+
+    describe('when one player has the most points', () => {
+
+      it('should return the player with the most points', () => {
+        const winner = { points: ROUND_POINTS };
+        const loser = { points: 0 };
+        const players = [winner, loser];
+        const winners = Game.getWinners(players);
+
+        winners.should
+          .have.length(1);
+      });
+
+    });
+
+    describe('when multiple players tie for the most points', () => {
+
+      it('should return all players tying for the most points', () => {
+        const playerName1 = playerName;
+        const playerName2 = 'Mathematician';
+        const playerName3 = 'EnglishMajor'
+        const winnerA = { name: playerName1, points: ROUND_POINTS };
+        const winnerB = { name: playerName2, points: ROUND_POINTS };
+        const loser = { name: playerName3, points: 0 };
+        const players = [winnerA, winnerB, loser];
+        const winners = Game.getWinners(players);
+
+        winners.should
+          .have.length(2).and
+          .include(winnerA).and
+          .include(winnerB);
+      });
+
+    });
+
+    describe('when all players have 0 points', () => {
+
+      it('should return an empty array', () => {
+        const players = [{ points: 0 }, { points: 0 }];
+        const winners = Game.getWinners(players);
+
+        winners.should
+          .be.an('array').and
+          .be.empty;
+      });
+
+    });
+
+  });
+
+  describe('#resetPoints()', () => {
+    let stub;
+
+    beforeEach(() => {
+      stub = sinon.stub(_, 'each');
+    });
+
+    afterEach(() => {
+      stub.restore();
+    });
+
+    it('should reset the points of all players', () => {
+      const playerA = Player.create(_.uniqueId());
+      const playerB = Player.create(_.uniqueId());
+      const playerC = Player.create(_.uniqueId());
+      const players = [playerA, playerB, playerC];
+      Game.resetPoints(players);
+
+      stub.should.have.been.calledWithExactly(players, Player.resetPoints);
+    });
+
+  });
 
 });
