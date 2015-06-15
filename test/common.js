@@ -1,10 +1,5 @@
-global.chai = require('chai');
-global.should = chai.should();
-global.sinon = require('sinon');
+import chai from 'chai';
+import sinonChai from 'sinon-chai';
 
-var sinonChai = require('sinon-chai');
+chai.should();
 chai.use(sinonChai);
-
-global._ = require('lodash');
-
-global.gameConfig = require('../libs/game-config');

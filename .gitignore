@@ -1,17 +1,5 @@
-# Testing
-node_modules/mocha
-node_modules/.bin
-node_modules/chai
-node_modules/sinon
-node_modules/sinon-chai
-
-# Bundling
-node_modules/browserify
-node_modules/envify
-node_modules/reactify
-node_modules/watchify
-.bundle.js
+# Build
+node_modules
 
 # Logs
-logs/*.log
-public/js/npm-debug.log
+**/*.log
